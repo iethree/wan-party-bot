@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 flask = "*"
 functions-framework = "*"
+"google.cloud" = "*"
+google-cloud-storage = "*"
 
 [scripts]
 test = "functions-framework --port 3200 --target=discord_bot"
