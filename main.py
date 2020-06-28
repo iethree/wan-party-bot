@@ -4,14 +4,14 @@ import sqlite3
 # get db from cloud storage
 storage_client = storage.Client()
 bucket = storage_client.get_bucket("wan_party_discord_bot")
-storage.Blob('wanparty.db', bucket).download_to_filename('wanparty.db')
-conn = sqlite3.connect('wanparty.db')
+storage.Blob('wanparty.db', bucket).download_to_filename('/tmp/wanparty.db')
+conn = sqlite3.connect('/tmp/wanparty.db')
 db = conn.cursor()
 
 # save to cloud storage
 def save_db():
   conn.commit()
-  storage.Blob('wanparty.db', bucket).upload_from_filename('wanparty.db')
+  storage.Blob('wanparty.db', bucket).upload_from_filename('/tmp/wanparty.db')
   db.close()
   conn.close()
 
