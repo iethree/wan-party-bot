@@ -24,5 +24,5 @@ for row in rows:
 save_db()
 
 def discord_bot(request):
-  return "hello world, someday I will be a discord bot with persistent data"
+  return "hello world, someday I will be a discord bot with persistent data and a ci/cd pipeline"
 
