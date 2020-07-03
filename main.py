@@ -16,10 +16,10 @@ db = conn.cursor()
 
 # save to cloud storage
 def save_db():
-		conn.commit()
-		storage.Blob('wanparty.db', bucket).upload_from_filename('/tmp/wanparty.db')
-		db.close()
-		conn.close()
+	conn.commit()
+	storage.Blob('wanparty.db', bucket).upload_from_filename('/tmp/wanparty.db')
+	db.close()
+	conn.close()
 
 db.execute('SELECT * FROM counts;')
 rows = db.fetchall()
@@ -35,12 +35,15 @@ def discord_bot(request):
 # Bot biz
 app = Flask(__name__)
 client = discord.Client()
+
 @app.route('/')
 def hello_world():
 		return "Hello, world!"
+
 @client.event
 async def on_ready():
 		print(f'Logged in as {client.user}')
+
 # TODO token should change to be whatever it needs to be in the cloud
 token = os.environ['DISCORD_SECRET']
 client.run(token)
