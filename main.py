@@ -5,6 +5,7 @@ import sqlite3
 from flask import Flask
 import os
 import discord
+import messageHandler as mh
 
 
 # get db from cloud storage
@@ -42,7 +43,23 @@ def hello_world():
 
 @client.event
 async def on_ready():
-		print(f'Logged in as {client.user}')
+  print('we have logged in as {0.user}'.format(client))
+
+@client.event
+async def on_message(message):
+  
+  if message.author == client.user:
+    return
+
+  if message.channel.name != 'chatter':
+    return
+
+  fromName = (message.author.nick or message.author.name or message.author)
+  print(fromName + ' : ' + message.content)
+
+  response = mh.respondToMessage(message)
+
+  await message.channel.send(response)
 
 # TODO token should change to be whatever it needs to be in the cloud
 token = os.environ['DISCORD_SECRET']
