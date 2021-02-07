@@ -7,6 +7,7 @@ import os
 import discord
 import messageHandler as mh
 
+token = os.environ['DISCORD_SECRET']
 
 # get db from cloud storage
 storage_client = storage.Client()
@@ -31,6 +32,7 @@ for row in rows:
 save_db()
 
 async def discord_bot(request):
+	client.run(token)
   print(request)
   return on_message(request)
 
@@ -62,6 +64,3 @@ async def on_message(message):
 
   await message.channel.send(response)
 
-# TODO token should change to be whatever it needs to be in the cloud
-token = os.environ['DISCORD_SECRET']
-client.run(token)
