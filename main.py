@@ -30,8 +30,7 @@ for row in rows:
 
 save_db()
 
-def discord_bot(request):
-  return "hello world, someday I will be a discord bot with persistent data and a ci/cd pipeline"
+
 
 # Bot biz
 app = Flask(__name__)
@@ -64,3 +63,7 @@ async def on_message(message):
 # TODO token should change to be whatever it needs to be in the cloud
 token = os.environ['DISCORD_SECRET']
 client.run(token)
+
+def discord_bot(request):
+  print(request)
+  return on_message(request)
