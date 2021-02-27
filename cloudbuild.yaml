@@ -1,4 +1,0 @@
-steps:
-- name: 'gcr.io/cloud-builders/gcloud'
-  args: ['functions', 'deploy', 'discord_bot', '--trigger-http', '--runtime', 'python37', '--entry-point', 'discord_bot', '--allow-unauthenticated']
-  dir: './'

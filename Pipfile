@@ -6,15 +6,9 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
-functions-framework = "*"
-"google.cloud" = "*"
-google-cloud-storage = "*"
 discord = "*"
 
 [scripts]
-test = "functions-framework --port 3200 --target=discord_bot"
-deploy = "gcloud functions deploy discord_bot --runtime python37 --trigger-http --allow-unauthenticated"
 echo = "echo hello"
 
 [requires]
