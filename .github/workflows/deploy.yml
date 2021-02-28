@@ -13,11 +13,9 @@ jobs:
     steps:
       - uses: webfactory/ssh-agent@v0.5.0
         with:
-            ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: test
-        run: echo ryan@${INSTANCE_IP} foo
+          ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Deploy
-        run: ssh ryan@${INSTANCE_IP} ./deploy.sh
+        run: ssh -o "StrictHostKeyChecking no" ryan@${INSTANCE_IP} ./deploy.sh
     env:
       SSH_KEY: "${{ secrets.SSH_KEY}}"
       INSTANCE_IP: "${{ secrets.INSTANCE_IP }}"
