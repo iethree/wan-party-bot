@@ -22,7 +22,7 @@ async def on_message(message):
   fromName = (message.author.nick or message.author.name or message.author)
   print(fromName + ' : ' + message.content)
 
-  response = mh.respondToMessage(message)
+  response = await mh.respondToMessage(message)
   if response:
     await message.channel.send(response)
 
