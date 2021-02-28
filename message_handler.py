@@ -1,6 +1,7 @@
 from discord.utils import get
 import random
 from reaction import *
+import subprocess as sub
 
 def sometimes(chance):
   return random.random() < chance
@@ -19,6 +20,10 @@ def get_emoji(guild, emoji_name):
     return '🙃'
 
 async def respond_to(message):
+  if message.content.startswith('#!'):
+      res = sub.run(message.content.split()[1:],
+          stdout=sub.PIPE, stderr=sub.PIPE)
+      return (res.stdout + res.stderr).decode('utf-8')
   content = message.content.lower()
   reactions = STATIC_REACTIONS + [
       Reaction('the way', get_emoji(message.guild, 'mando')),
