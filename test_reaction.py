@@ -17,5 +17,14 @@ class TestReaction(unittest.TestCase):
             reaction.apply_to(msg)
         self.assertEqual(['💩'], msg.reactions)
 
+class TestMatchingReaction(unittest.TestCase):
+    def test_the_other_whole_dang_thing(self):
+        msg = FakeMessage('poop')
+        reaction = MatchingReaction(lambda c, m: 'poop' in c, '💩')
+        if reaction.matches(msg.content, msg):
+            reaction.apply_to(msg)
+        self.assertEqual(['💩'], msg.reactions)
+
+
 if __name__ == '__main__':
     unittest.main()
