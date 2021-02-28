@@ -15,8 +15,10 @@ async def on_ready():
   print('we have logged in as {0.user}'.format(client))
   for c in client.get_all_channels():
       if c.name == 'devs':
-          res = sub.run('git log -1'.split(), stdout=sub.PIPE)
-          await c.send('I live! \n\n' + res.stdout.decode('utf-8'))
+          commit = sub.run('git log -1 --pretty=%B'.split(), stdout=sub.PIPE)
+          env = sub.run('hostname'.split(), stdout=sub.PIPE)
+          status_info = env.stdout.decode('utf-8') + ' | ' + commit.stdout.decode('utf-8')
+          await client.change_presence(activity=discord.Game(status_info))
 
 
 @client.event
