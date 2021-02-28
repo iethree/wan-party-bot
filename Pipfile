@@ -13,4 +13,4 @@ echo = "echo hello"
 start = "pipenv run python3 ./main.py"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

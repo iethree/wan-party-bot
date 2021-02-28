@@ -19,7 +19,8 @@ async def on_message(message):
   if message.author == client.user:
     return
 
-  fromName = (message.author.nick or message.author.name or message.author)
+  fromName = getattr(message.author, 'nick', message.author.name)
+
   print(fromName + ' : ' + message.content)
 
   response = await mh.respondToMessage(message)
