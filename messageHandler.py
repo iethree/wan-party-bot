@@ -29,6 +29,8 @@ def get_emoji(guild, emojiName):
     emoji = get(guild.emojis, name=emojiName)
   except Exception as e:
     emoji = '🙃'
+  
+  return emoji
 
 def sometimes(chance):
   return chance * 100 >= random.randint(1,100)
