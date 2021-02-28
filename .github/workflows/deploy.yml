@@ -17,6 +17,6 @@ jobs:
       - name: Deploy
         run: ssh ryan@${INSTANCE_IP} ./deploy.sh
     env:
-      SSH_KEY: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-      INSTANCE_IP: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+      SSH_KEY: "${{ secrets.SSH_KEY}}"
+      INSTANCE_IP: "${{ secrets.INSTANCE_IP }}"
 
