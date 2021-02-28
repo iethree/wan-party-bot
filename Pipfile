@@ -10,7 +10,7 @@ discord = "*"
 
 [scripts]
 echo = "echo hello"
-start = "pipenv run ./main.py"
+start = "pipenv run python3 ./main.py"
 
 [requires]
 python_version = "3.8"
