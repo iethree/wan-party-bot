@@ -9,10 +9,10 @@ class Reaction:
     def matches(self, content, message=None):
         return any(kw in content for kw in self.keywords)
 
-    def apply_to(self, message):
+    async def apply_to(self, message):
         for reaction in self.reactions:
             print("Adding " + reaction + "!")
-            message.add_reaction(reaction)
+            await message.add_reaction(reaction)
 
 class MatchingReaction(Reaction):
     def __init__(self, matcher, reactions):

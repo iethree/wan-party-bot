@@ -16,7 +16,7 @@ async def on_ready():
   for c in client.get_all_channels():
       if c.name == 'devs':
           res = sub.run('git log -1'.split(), stdout=sub.PIPE)
-          c.send('I live! ' + res.stdout.decode('utf-8'))
+          # await c.send('I live! ' + res.stdout.decode('utf-8'))
 
 
 @client.event
@@ -25,7 +25,7 @@ async def on_message(message):
     return
 
   print(message.author.display_name + ' : ' + message.content)
-
+  
   response = await mh.respond_to(message)
 
   if response:
