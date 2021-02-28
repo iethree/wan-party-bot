@@ -3,6 +3,7 @@ import sqlite3
 import os
 import discord
 import message_handler as mh
+import subprocess as sub
 
 conn = sqlite3.connect('/tmp/wanparty.db')
 db = conn.cursor()
@@ -12,6 +13,10 @@ client = discord.Client()
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
+  for c in client.get_all_channels():
+      if c.name == 'devs':
+          res = sub.run('git log -1'.split(), stdout=sub.PIPE)
+          c.send('I live! ' + res.stdout.decode('utf-8'))
 
 
 @client.event
