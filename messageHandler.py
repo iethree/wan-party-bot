@@ -5,13 +5,16 @@ async def respondToMessage(client, message):
   content = message.content.lower()
 
   if 'the way' in content:
-    for e in client.emojis:
-        if e.name == 'mando':
-            await message.add_reaction(e)
-            break
-    else:
-        names = ', '.join(e.name for e in client.emojis)
-        return f'error fetching :mando:. names=[{names}]'
+    try:
+        for e in client.emojis:
+            if e.name == 'mando':
+                await message.add_reaction(e)
+                break
+        else:
+            names = ', '.join(e.name for e in client.emojis)
+            return f':mando: not in client. names=[{names}]'
+    except e:
+        return f'error fetching :mando:. {e}'
 
   if 'poop' in content:
     return ":poop:"
