@@ -1,5 +1,5 @@
 def listify(maybe_list):
-    maybe_list if isinstance(maybe_list, type([])) else [maybe_list]
+    return maybe_list if isinstance(maybe_list, type([])) else [maybe_list]
 
 class Reaction:
     def __init__(self, keywords, reactions):
