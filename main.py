@@ -19,11 +19,10 @@ async def on_message(message):
   if message.author == client.user:
     return
 
-  fromName = getattr(message.author, 'nick', message.author.name)
-
-  print(fromName + ' : ' + message.content)
+  print(message.author.display_name + ' : ' + message.content)
 
   response = await mh.respondToMessage(message)
+  
   if response:
     await message.channel.send(response)
 
