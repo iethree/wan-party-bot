@@ -1,7 +1,16 @@
 from discord.utils import get
 import random
 
-async def respondToMessage(message):
+def get_emoji(guild, emojiName):
+  try:
+    return get(guild.emojis, name=emojiName)
+  except Exception as e:
+    return '🙃'
+
+def sometimes(chance):
+  return random.random() < chance
+
+async def respond_to(message):
   content = message.content.lower()
 
   if 'the way' in content:
@@ -23,14 +32,3 @@ async def respondToMessage(message):
   if 'star wars' in content and message.channel.name != 'star-wars':
     await message.add_reaction(get_emoji(message.guild, 'stormtrooper'))
 
-
-def get_emoji(guild, emojiName):
-  try:
-    emoji = get(guild.emojis, name=emojiName)
-  except Exception as e:
-    emoji = '🙃'
-  
-  return emoji
-
-def sometimes(chance):
-  return chance * 100 >= random.randint(1,100)

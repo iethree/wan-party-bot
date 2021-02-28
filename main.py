@@ -2,7 +2,7 @@
 import sqlite3
 import os
 import discord
-import messageHandler as mh
+import message_handler as mh
 
 conn = sqlite3.connect('/tmp/wanparty.db')
 db = conn.cursor()
@@ -12,7 +12,7 @@ client = discord.Client()
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
-  
+
 
 @client.event
 async def on_message(message):
@@ -21,8 +21,8 @@ async def on_message(message):
 
   print(message.author.display_name + ' : ' + message.content)
 
-  response = await mh.respondToMessage(message)
-  
+  response = await mh.respond_to(message)
+
   if response:
     await message.channel.send(response)
 
