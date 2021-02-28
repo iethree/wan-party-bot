@@ -1,0 +1,22 @@
+name: deploy-test
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.5.0
+        with:
+            ssh-private-key: ${{ secrets.SSH_KEY }}
+      - name: Deploy
+        run: ssh ryan@${ INSTANCE_IP } ./deploy.sh
+    env:
+      SSH_KEY: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+      INSTANCE_IP: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+
