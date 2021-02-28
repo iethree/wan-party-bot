@@ -11,7 +11,7 @@ class Reaction:
 
     async def apply_to(self, message):
         for reaction in self.reactions:
-            print("Adding " + reaction + "!")
+            print("Adding {}!".format(reaction))
             await message.add_reaction(reaction)
 
 class MatchingReaction(Reaction):
