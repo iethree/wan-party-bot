@@ -15,7 +15,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Deploy
-        run: ssh -o "StrictHostKeyChecking no" ryan@${INSTANCE_IP} ./deploy.sh
+        run: ssh -o "StrictHostKeyChecking no" ryan@${INSTANCE_IP} screen -d -m ./deploy.sh
     env:
       SSH_KEY: "${{ secrets.SSH_KEY}}"
       INSTANCE_IP: "${{ secrets.INSTANCE_IP }}"
