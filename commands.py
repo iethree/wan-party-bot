@@ -6,7 +6,6 @@ bot = commands.Bot(command_prefix="/")
 
 @commands.command()
 async def puppet(ctx, channel_name, msg):
-    # channel = discord.utils.get(ctx.guild.channels, name=channel)
     channels = bot.get_all_channels()
     for channel in channels:
         if channel.name == channel_name:
