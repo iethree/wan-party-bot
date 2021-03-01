@@ -3,8 +3,16 @@ import random
 from reaction import *
 import subprocess as sub
 
+
 def sometimes(chance):
   return random.random() < chance
+
+
+async def get_most_recent_message(name_part, channel, limit=64):
+    async for message in channel.history(limit=limit):
+        if name_part in message.author.name.lower():
+            return message
+
 
 STATIC_REACTIONS = [
     Reaction('poop', '💩'),
@@ -29,6 +37,10 @@ async def respond_to(message):
       return (res.stdout + res.stderr).decode('utf-8')
 
   content = message.content.lower()
+
+  if all(p in content for p in '@wanbot what think'.split()):
+      parrot = await get_most_recent_message('void', message.channel)
+      return parrot.content
 
   reactions = STATIC_REACTIONS + [
       Reaction('the way', get_emoji(message.guild, 'mando')),
