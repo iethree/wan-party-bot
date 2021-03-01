@@ -40,6 +40,8 @@ async def respond_to(message):
 
   if all(p in content for p in '@wanbot what think'.split()):
       parrot = await get_most_recent_message('void', message.channel)
+      if parrot is None:
+          return 'hmmm'
       return parrot.content
 
   reactions = STATIC_REACTIONS + [
