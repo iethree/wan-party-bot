@@ -32,8 +32,8 @@ async def respond_to(client, message):
 
   content = message.content.lower()
 
-  if all(p in content for p in [client.user.name, 'what', 'think']):
-    async for m in channel.history(limit=64):
+  if all(p in content for p in [str(client.user.id), 'what', 'think']):
+    async for m in message.channel.history(limit=64):
       if m.id == message.id:
         continue
       if 'void' not in m.author.name.lower():
@@ -45,7 +45,7 @@ async def respond_to(client, message):
       Reaction('the way', get_emoji(message.guild, 'mando')),
       MatchingReaction(lambda c, m: 'star wars' in c and m.channel.name != 'star-wars', get_emoji(message.guild, 'stormtrooper')),
   ]
-  
+
   for reaction in reactions:
       if reaction.matches(content, message):
           await reaction.apply_to(message)
