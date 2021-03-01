@@ -10,6 +10,7 @@ STATIC_REACTIONS = [
     Reaction('poop', '💩'),
     Reaction(['drg', 'dwarf'], ['🪨', '🥌']), # rock and stone
     Reaction('ps5', '👎'),
+    Reaction('how you doin bot?', '👍'),
     MatchingReaction(lambda c, m: sometimes(0.1) and 'shplay' in m.author.display_name.lower(), '🙄')
 ]
 
