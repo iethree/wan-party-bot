@@ -32,8 +32,7 @@ async def respond_to(client, message):
 
   content = message.content.lower()
 
-  if all(p in content for p in [
-      str(client.user.id), 'what', 'think']):
+  if all(p in content for p in [client.user.name, 'what', 'think']):
     async for m in channel.history(limit=64):
       if m.id == message.id:
         continue
