@@ -71,11 +71,3 @@ async def respond_to(client, message):
       if reaction.matches(content, message):
           await reaction.apply_to(message)
 
-  responses = [
-      ['/roll', random.randint(1,100)]
-  ]
-
-  for response in responses:
-      if response[0] in content:
-          await message.reply(response[1])
-
