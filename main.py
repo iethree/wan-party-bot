@@ -4,32 +4,35 @@ import os
 import discord
 import message_handler as mh
 import subprocess as sub
+from commands import bot
 
 conn = sqlite3.connect('/tmp/wanparty.db')
 db = conn.cursor()
 
-client = discord.Client()
+# client = discord.Client()
 
-@client.event
+@bot.event
 async def on_ready():
-  print('we have logged in as {0.user}'.format(client))
+  print('we have logged in as {0.user}'.format(bot))
 
   commit = sub.run('git log -1 --pretty=%B'.split(), stdout=sub.PIPE)
   env = sub.run('hostname'.split(), stdout=sub.PIPE)
   status_info = env.stdout.decode('utf-8') + ' | ' + commit.stdout.decode('utf-8')
-  await client.change_presence(activity=discord.Game(status_info))
+  await bot.change_presence(activity=discord.Game(status_info))
 
 
-@client.event
+@bot.event
 async def on_message(message):
-  if message.author == client.user:
+  if message.author == bot.user:
     return
 
-  print(message.author.display_name + ' : ' + message.content)
+  print(message.author.display_name + ': ' + message.content)
 
-  response = await mh.respond_to(client, message)
+  await bot.process_commands(message)
+
+  response = await mh.respond_to(bot, message)
 
   if response:
     await message.channel.send(response)
 
-client.run(os.getenv('DISCORD_TOKEN'))
+bot.run(os.getenv('DISCORD_TOKEN'))
