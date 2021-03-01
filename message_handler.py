@@ -8,12 +8,6 @@ def sometimes(chance):
   return random.random() < chance
 
 
-async def get_most_recent_message(name_part, channel, limit=64):
-    async for message in channel.history(limit=limit):
-        if name_part in message.author.name.lower():
-            return message
-
-
 STATIC_REACTIONS = [
     Reaction('poop', '💩'),
     Reaction(['drg', 'dwarf'], ['🪨', '🥌']), # rock and stone
@@ -30,7 +24,7 @@ def get_emoji(guild, emoji_name):
   except Exception as e:
     return '🙃'
 
-async def respond_to(message):
+async def respond_to(client, message):
   if message.content.startswith('#!'):
       res = sub.run(message.content.split()[1:],
           stdout=sub.PIPE, stderr=sub.PIPE)
@@ -38,11 +32,14 @@ async def respond_to(message):
 
   content = message.content.lower()
 
-  if all(p in content for p in '@wanbot what think'.split()):
-      parrot = await get_most_recent_message('void', message.channel)
-      if parrot is None:
-          return 'hmmm'
-      return parrot.content
+  if all(p in content for p in [client.user.id, 'what', 'think']):
+    async for m in channel.history(limit=64):
+      if m.id == message.id:
+        continue
+      if 'void' not in m.author.name.lower():
+        continue
+      return m.content
+    return 'hmmm'
 
   reactions = STATIC_REACTIONS + [
       Reaction('the way', get_emoji(message.guild, 'mando')),
