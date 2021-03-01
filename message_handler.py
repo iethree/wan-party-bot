@@ -44,9 +44,12 @@ async def respond_to(client, message):
       return (res.stdout + res.stderr).decode('utf-8')
 
   if message.content.startswith('##'):
+    try:
       with intercept_stdio() as out, err:
         exec(message.content)
       return out.getvalue() + err.getvalue()
+    except Exception as e:
+      return str(e)
 
   content = message.content.lower()
 
