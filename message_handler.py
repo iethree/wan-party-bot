@@ -2,6 +2,9 @@ from discord.utils import get
 import random
 from reaction import *
 import subprocess as sub
+import io
+import sys
+import contextlib
 
 
 def sometimes(chance):
@@ -17,6 +20,16 @@ STATIC_REACTIONS = [
 ]
 
 
+@contextlib.contextmanager
+def intercept_stdio():
+    stdout = sys.stdout
+    stderr = sys.stderr
+    sys.stdout = io.StringIO()
+    sys.stderr = io.StringIO()
+    yield sys.stdout, sys.stderr
+    sys.stdout = stdout
+    sys.stderr = stderr
+
 
 def get_emoji(guild, emoji_name):
   try:
@@ -29,6 +42,11 @@ async def respond_to(client, message):
       res = sub.run(message.content.split()[1:],
           stdout=sub.PIPE, stderr=sub.PIPE)
       return (res.stdout + res.stderr).decode('utf-8')
+
+  if message.content.startswith('##'):
+      with intercept_stdio() as out, err:
+        exec(message.content)
+      return out.getvalue() + err.getvalue()
 
   content = message.content.lower()
 
