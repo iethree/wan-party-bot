@@ -7,10 +7,14 @@ bot = commands.Bot(command_prefix="/")
 INSTRUCTIONS = {
     "+": (lambda x, y: x + y),
     "-": (lambda x, y: x - y),
-    "*": (lambda x, y: x * y)
+    "*": (lambda x, y: x * y),
+    "/": (lambda x, y: x / y),
+    "^": (lambda x, y: x ** y),
+    "‽": (lambda x, y: 42)
 }
 
-DICE_RE = r"(\d+)\s*d\s*(\d+)\s*([*+\-]\s*\d+)?"
+INS_RE = "[" + re.escape("".join(INSTRUCTIONS.keys())) + "]"
+DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 @bot.command()
 async def puppet(ctx, channel_name, msg):
@@ -48,7 +52,7 @@ async def roll(ctx, *, arg=None):
     rolls, result = [], 0
     try:
         nice_arg = nice_dice(arg)
-        if not re.search("(" + DICE_RE + r"\s+)+", nice_arg):
+        if not re.search("(" + DICE_RE + r"\s*)*", nice_arg):
             raise Exception("haha")
         rolls, result = do_the_thing(nice_arg)
     except Exception as e: #yolo
