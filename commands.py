@@ -10,7 +10,7 @@ INSTRUCTIONS = {
     "*": (lambda x, y: x * y)
 }
 
-DICE_RE = r"(\d+)d(\d+)([*+\-]\d+)?"
+DICE_RE = r"(\d+)\s*d\s*(\d+)\s*([*+\-]\s*\d+)?"
 
 @bot.command()
 async def puppet(ctx, channel_name, msg):
