@@ -1,7 +1,6 @@
 from discord.ext import commands
 import random
 import re
-import sys
 
 bot = commands.Bot(command_prefix="/")
 
@@ -21,17 +20,23 @@ async def roll(ctx, *, arg=None):
     if arg is None:
         await ctx.send(str(random.randint(1, 100)))
         return
+    
     dice = arg.strip().lower()
     dice_count = 1
     result = 0
     error_message = "Something went wrong. It's probably Ryan's fault."
     instruction = ""
     rolls = []
+    instructions = {
+        "+": (lambda x, y: x + y),
+        "-": (lambda x, y: x - y),
+        "*": (lambda x, y: x * y)
+    }
 
     dice_list = re.split("([d\+\*\-])", dice)
 
     try:
-        for i, x in enumerate(dice_list):
+        for x in dice_list:
             el = x.strip()
             if not el.isdigit():
                 instruction = el
@@ -47,16 +52,8 @@ async def roll(ctx, *, arg=None):
                     rolls.append(str(roll))
                     result += roll
 
-            if instruction == "+":
-                result += int(el)
-
-            if instruction == "-":
-                result -= int(el)
-
-            if instruction == "*":
-                result *= int(el)
-
-
+            if instruction in ["+", "-", "*"]:
+                result = instructions[instruction](result, int(el))
     except Exception as e: #yolo
         await ctx.send(error_message)
         print(e)
