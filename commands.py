@@ -7,14 +7,10 @@ bot = commands.Bot(command_prefix="/")
 INSTRUCTIONS = {
     "+": (lambda x, y: x + y),
     "-": (lambda x, y: x - y),
-    "*": (lambda x, y: x * y),
-    "/": (lambda x, y: x / y),
-    "^": (lambda x, y: x ** y),
-    "‽": (lambda x, y: 42)
+    "*": (lambda x, y: x * y)
 }
 
-INS_RE = "[" + re.escape("".join(INSTRUCTIONS.keys())) + "]"
-DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
+DICE_RE = r"(\d+)\s*d\s*(\d+)\s*([*+\-]\s*\d+)?"
 
 @bot.command()
 async def puppet(ctx, channel_name, msg):
