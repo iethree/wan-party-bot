@@ -1,6 +1,7 @@
 from discord.ext import commands
 import random
 import re
+from get_error_message import get_error_message_for_fun_times_everyone_loves_error_messages
 
 bot = commands.Bot(command_prefix="/")
 
@@ -11,6 +12,10 @@ INSTRUCTIONS = {
 }
 
 DICE_RE = r"(\d+)\s*d\s*(\d+)\s*([*+\-]\s*\d+)?"
+
+@bot.command()
+async def rollin(ctx):
+    await ctx.send("Aww yeah 😎")
 
 @bot.command()
 async def puppet(ctx, channel_name, msg):
@@ -42,7 +47,6 @@ async def roll(ctx, *, arg=None):
         await ctx.send(str(random.randint(1, 100)))
         return
 
-    error_message = "Something went wrong. It's probably Ryan's fault."
     instruction = ""
 
     rolls, result = [], 0
@@ -52,7 +56,7 @@ async def roll(ctx, *, arg=None):
             raise Exception("haha")
         rolls, result = do_the_thing(nice_arg)
     except Exception as e: #yolo
-        await ctx.send(error_message)
+        await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
         print(e)
         return
 
