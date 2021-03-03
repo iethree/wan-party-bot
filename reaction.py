@@ -1,6 +1,7 @@
 def listify(maybe_list):
     return maybe_list if isinstance(maybe_list, type([])) else [maybe_list]
 
+
 class Reaction:
     def __init__(self, keywords, reactions):
         self.keywords = listify(keywords)
@@ -14,6 +15,7 @@ class Reaction:
             print("Adding {}!".format(reaction))
             await message.add_reaction(reaction)
 
+
 class MatchingReaction(Reaction):
     def __init__(self, matcher, reactions):
         self.matcher = matcher
@@ -21,4 +23,3 @@ class MatchingReaction(Reaction):
 
     def matches(self, content, message=None):
         return self.matcher(content, message)
-
