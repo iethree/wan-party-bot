@@ -5,11 +5,11 @@ import discord
 import message_handler as mh
 import subprocess as sub
 from commands import bot
+from tables import initiate_tables
 
 conn = sqlite3.connect('/tmp/wanparty.db')
 db = conn.cursor()
-
-# client = discord.Client()
+initiate_tables()
 
 @bot.event
 async def on_ready():
