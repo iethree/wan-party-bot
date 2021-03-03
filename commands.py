@@ -37,7 +37,7 @@ async def bet(ctx, bet: int, guess: str):
     ).fetchone()
 
     is_naughty = bet_cursor.execute(
-        "SELECT * FROM naughty_list where user_id = ?",
+        "SELECT * FROM naughty_list where id = ?",
         (user_id,)
     ).fetchone() is not None
 
