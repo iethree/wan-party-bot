@@ -1,6 +1,7 @@
 from discord.utils import get
 import random
 from reaction import *
+from jokes import random_joke
 import subprocess as sub
 import io
 import sys
@@ -67,7 +68,14 @@ async def respond_to(client, message):
       MatchingReaction(lambda c, m: 'star wars' in c and m.channel.name != 'star-wars', get_emoji(message.guild, 'stormtrooper')),
   ]
 
+  responses = [
+    ['joke', random_joke()]
+  ]
+
   for reaction in reactions:
       if reaction.matches(content, message):
           await reaction.apply_to(message)
 
+  for response in reactions:
+      if response[0] in content:
+          await message.channel.send(response[1])
