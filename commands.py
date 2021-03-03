@@ -135,15 +135,18 @@ async def roll(ctx, *, arg=None):
 
 @bot.command()
 async def sql(ctx, *, arg=None):
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute(arg)
-        result = cursor.fetchall()
-        result = '\n'.join(map(str, result))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        result = 'Error: ' + str(e)
+    if 'drop table' in arg.lower():
+        result='🖕'
+    else:
+        try:
+            conn = sqlite3.connect(DATABASE)
+            cursor = conn.cursor()
+            cursor.execute(arg)
+            result = cursor.fetchall()
+            result = '\n'.join(map(str, result))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            result = 'Error: ' + str(e)
 
     await ctx.send('```sql\n' + str(result) + '\n```')
