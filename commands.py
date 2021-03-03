@@ -75,7 +75,10 @@ async def bet(ctx, bet: int, guess: str):
     message += f" You have {new_balance} wanbux now."
     if new_balance == 0:
         message += " You're broke now! Get lost, ya bum."
-    bet_cursor.execute("UPDATE wanbux SET balance = ?", (new_balance,))
+    bet_cursor.execute(
+        "UPDATE wanbux SET balance = ? WHERE id = ?",
+        (new_balance, user_id)
+    )
 
     conn.commit()
     conn.close()
