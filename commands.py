@@ -8,6 +8,7 @@ from get_error_message import (
 )
 import sqlite3
 import socket
+import functools
 
 DATABASE = "wanparty.db"
 
@@ -26,23 +27,33 @@ INS_RE = "[" + re.escape("".join(INSTRUCTIONS.keys())) + "]"
 DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 
+def gimme_db(cmd_fn):
+    @functools.wraps(cmd_fn)
+    def fn(*args, **kwargs):
+        if "db" in kwargs:
+            return cmd_fn(*args, **kwargs)
+
+        conn = sqlite3.connect(DATABASE)
+        ret = cmd_fn(*args, **kwargs, db=conn.cursor())
+        conn.commit()
+        conn.close()
+        return ret
+
+    return fn
+
+
 @bot.command()
-async def bet(ctx, bet: int, guess: str):
+@gimme_db
+async def bet(ctx, bet: int, guess: str, *, db):
     await ctx.send(random_gif("vegas"))
 
     message = ""
     user_id = ctx.message.author.id
-    conn = sqlite3.connect(DATABASE)
-    bet_cursor = conn.cursor()
 
-    user = bet_cursor.execute(
-        "SELECT * FROM wanbux WHERE id = ?", (user_id,)
-    ).fetchone()
+    user = db.execute("SELECT * FROM wanbux WHERE id = ?", (user_id,)).fetchone()
 
     is_naughty = (
-        bet_cursor.execute(
-            "SELECT * FROM naughty_list where id = ?", (user_id,)
-        ).fetchone()
+        db.execute("SELECT * FROM naughty_list where id = ?", (user_id,)).fetchone()
         is not None
     )
 
@@ -53,13 +64,7 @@ async def bet(ctx, bet: int, guess: str):
     if user is None:
         message += f"Welcome to the WAN Casino {ctx.message.author.mention}."
         message += " Have 5 Wanbux on the house.\n"
-        bet_cursor.execute(
-            "INSERT INTO wanbux(id, balance) VALUES(?, ?)",
-            (
-                user_id,
-                5,
-            ),
-        )
+        update_balance(user_id, 5, db=db)
 
     balance = user[1] if user is not None else 5
 
@@ -80,51 +85,44 @@ async def bet(ctx, bet: int, guess: str):
     message += f" You have {new_balance} wanbux now."
     if new_balance == 0:
         message += " You're broke now! Get lost, ya bum."
-    bet_cursor.execute(
-        "UPDATE wanbux SET balance = ? WHERE id = ?", (new_balance, user_id)
-    )
+    db.execute("UPDATE wanbux SET balance = ? WHERE id = ?", (new_balance, user_id))
 
-    conn.commit()
-    conn.close()
     await ctx.send(message)
 
 
-async def get_balance(user_id):
-    conn = sqlite3.connect(DATABASE)
-    bal_cursor = conn.cursor()
-    row = bal_cursor.execute(
+@gimme_db
+async def get_balance(user_id, *, db):
+    if row := db.execute(
         "SELECT balance FROM wanbux WHERE id = ?", (user_id,)
-    ).fetchone()
-    return row
+    ).fetchone():
+        return row[0]
+    return update_balance(user_id, 0)
 
 
-async def update_balance(user_id, update):
-    conn = sqlite3.connect(DATABASE)
-    bal_cursor = conn.cursor()
-    updated_row = bal_cursor.execute(
-        "UPDATE wanbux set balance = ? WHERE id = ?", (update, user_id)
+@gimme_db
+async def update_balance(user_id, update, *, db):
+    return db.execute(
+        "INSERT INTO wanbux (id, balance) VALUES (?, ?)"
+        " ON DUPLICATE KEY UPDATE balance = ?",
+        (user_id, update, update),
     )
-    return updated_row
 
 
 @bot.command(name="balance")
 async def eval_balance(ctx):
-    row = get_balance(ctx.message.author.id)
-    if row is not None:
-        await ctx.send(f"{ctx.message.author.mention}'s balance is {row[0]} wanbux")
-        return
-
-    await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
+    balance = get_balance(ctx.message.author.id)
+    await ctx.send(f"{ctx.message.author.mention}'s balance is {balance} wanbux")
 
 
 @bot.command
-async def beg(ctx):
-    row = get_balance(ctx)
-    if row is not None and row[0] == 0:
-        await update_balance(ctx.message.author.id, 1)
-        await ctx.send(
-            "Try not to spend it all in one place f'{ctx.message.author.mention} 😎"
-        )
+@gimme_db
+async def beg(ctx, *, db):
+    author = ctx.message.author
+
+    balance = get_balance(author.id, db=db)
+    if balance == 0:
+        await update_balance(author.id, 1, db=db)
+        await ctx.send(f"Try not to spend it all in one place {author.mention} 😎")
     elif row is not None and row[0] > 0:
         await ctx.send("🖕")
     else:
@@ -134,6 +132,16 @@ async def beg(ctx):
 # @bot.command
 # async def pay(ctx, member: MemberConverter):
 #     # etc you get it
+
+
+@bot.command()
+@gimme_db
+async def rob(ctx, victim: MemberConverter, *, db):
+    thief = ctx.message.author
+    stolen = get_balance(victim.id, db=db)
+    new_balance = get_balance(thief.id, db=db) + stolen
+    update_balance(thief.id, new_balance)
+    update_balance(victim.id, 0)
 
 
 @bot.command()
