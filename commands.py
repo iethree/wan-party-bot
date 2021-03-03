@@ -84,29 +84,46 @@ async def bet(ctx, bet: int, guess: str):
     conn.close()
     await ctx.send(message)
 
-
-@bot.command()
-async def balance(ctx):
+async def get_balance(user_id):
     conn = sqlite3.connect(DATABASE)
     bal_cursor = conn.cursor()
     row = bal_cursor.execute(
-        "SELECT balance FROM wanbux WHERE id = ?", (ctx.message.author.id,)
+        "SELECT balance FROM wanbux WHERE id = ?", (user_id,)
     ).fetchone()
+    return row
+
+async def update_balance(user_id, update):
+    conn = sqlite3.connect(DATABASE)
+    bal_cursor = conn.cursor()
+    updated_row = bal_cursor.execute(
+        "UPDATE wanbux set balance = ? WHERE id = ?",
+        (update, user_id)
+    )
+    return updated_row
+   
+@bot.command(name="balance")
+async def eval_balance(ctx):
+    row = get_balance(ctx.message.author.id)
     if row is not None:
         await ctx.send(f"{ctx.message.author.mention}'s balance is {row[0]} wanbux")
         return
 
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
 
+@bot.command
+async def beg(ctx):
+    row = get_balance(ctx)
+    if row is not None and row[0] == 0:
+        await update_balance(ctx.message.author.id, 1)
+        await ctx.send("Try not to spend it all in one place f"{ctx.message.author.mention} 😎")
+    else if row is not None and row[0] > 0
+        await ctx.send("🖕")
+    else
+        await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
 # @bot.command
 # async def pay(ctx, member: MemberConverter):
 #     # etc you get it
-
-# @bot.command
-# async def beg(ctx):
-# get 5 dollars from wanbot if balance = 0
-
 
 @bot.command()
 async def rollin(ctx):
