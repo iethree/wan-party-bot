@@ -29,12 +29,12 @@ DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 def gimme_db(cmd_fn):
     @functools.wraps(cmd_fn)
-    def fn(*args, **kwargs):
+    async def fn(*args, **kwargs):
         if "db" in kwargs:
             return cmd_fn(*args, **kwargs)
 
         conn = sqlite3.connect(DATABASE)
-        ret = cmd_fn(*args, **kwargs, db=conn.cursor())
+        ret = await cmd_fn(*args, **kwargs, db=conn.cursor())
         conn.commit()
         conn.close()
         return ret
