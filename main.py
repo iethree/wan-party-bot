@@ -7,8 +7,6 @@ import subprocess as sub
 from commands import bot
 from tables import initiate_tables
 
-conn = sqlite3.connect('/tmp/wanparty.db')
-db = conn.cursor()
 initiate_tables()
 
 @bot.event

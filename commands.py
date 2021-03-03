@@ -6,7 +6,7 @@ from get_error_message import get_error_message_for_fun_times_everyone_loves_err
 import sqlite3
 import socket
 
-DATABASE = '/tmp/wanparty.db' if socket.gethostname() == "wan-party-bot" else "wanparty.db"
+DATABASE = "wanparty.db"
 
 bot = commands.Bot(command_prefix="/")
 
@@ -133,3 +133,17 @@ async def roll(ctx, *, arg=None):
 
     await ctx.send("I rolled: " + " ".join(rolls) + ", result: " + str(result))
 
+@bot.command()
+async def sql(ctx, *, arg=None):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute(arg)
+        result = cursor.fetchall()
+        result = '\n'.join(map(str, result))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        result = 'Error: ' + str(e)
+
+    await ctx.send('```sql\n' + str(result) + '\n```')
