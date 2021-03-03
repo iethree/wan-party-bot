@@ -27,10 +27,6 @@ DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 @bot.command()
 async def bet(ctx, bet: int, guess: str):
-    if bet <= 0:
-        await ctx.send("Cute")
-        return
-
     message = ""
     user_id = ctx.message.author.id
     conn = sqlite3.connect(DATABASE)
@@ -40,8 +36,18 @@ async def bet(ctx, bet: int, guess: str):
         "SELECT * FROM wanbux WHERE id = ?", (user_id,)
     ).fetchone()
 
+    is_naughty = bet_cursor.execute(
+        "SELECT * FROM naughty_list where user_id = ?",
+        (user_id,)
+    ).fetchone() is not None
+
+    if bet <= 0 and not is_naughty:
+        await ctx.send("Cute")
+        return
+
     if user is None:
-        message += f"Welcome to the WAN Casino {ctx.message.author.mention}. Have 5 Wanbux on the house.\n "
+        message += f"Welcome to the WAN Casino {ctx.message.author.mention}."
+        message += " Have 5 Wanbux on the house.\n"
         bet_cursor.execute(
             "INSERT INTO wanbux(id, balance) VALUES(?, ?)",
             (
@@ -53,22 +59,23 @@ async def bet(ctx, bet: int, guess: str):
     balance = user[1] if user is not None else 5
 
     if bet > balance:
-        await ctx.send(
-            f"Your bet is too high. I'm going to assume you're betting "
-            f"everything you have, which is {balance} wanbux.\n"
-        )
-        bet = balance
+        if not is_naughty:
+            await ctx.send(
+                f"Your bet is too high. I'm going to assume you're betting "
+                f"everything you have, which is {balance} wanbux.\n"
+            )
+            bet = balance
 
     flip = random.choice(["heads", "tails"])
-    message += f"I flipped {flip}. "
+    message += f"I flipped {flip}."
 
-    if flip == guess.strip().lower():
-        message += f"You won {bet}! You have {balance + bet} wanbux now."
-        bet_cursor.execute("UPDATE wanbux SET balance = ?", (balance + bet,))
-    else:
-        message += f"You lose {bet} wanbux! You have {balance - bet} total now. "
-        message += "You're broke now! Get lost, ya bum." if balance - bet == 0 else ""
-        bet_cursor.execute("UPDATE wanbux SET balance = ?", (balance - bet,))
+    is_win = flip == guess.strip().lower()
+    new_balance = balance + bet if is_win else balance - bet
+    message += f" You {'won' if is_win else 'lost'} {bet} wanbux!"
+    message += f" You have {new_balance} wanbux now."
+    if new_balance == 0:
+        message += " You're broke now! Get lost, ya bum."
+    bet_cursor.execute("UPDATE wanbux SET balance = ?", (new_balance,))
 
     conn.commit()
     conn.close()
