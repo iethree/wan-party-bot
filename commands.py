@@ -1,6 +1,7 @@
 from discord.ext import commands
 from discord.ext.commands import MemberConverter
 import random
+from giphy import *
 import re
 from get_error_message import (
     get_error_message_for_fun_times_everyone_loves_error_messages,
@@ -27,6 +28,8 @@ DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 @bot.command()
 async def bet(ctx, bet: int, guess: str):
+    await ctx.send(random_gif('vegas'))
+
     message = ""
     user_id = ctx.message.author.id
     conn = sqlite3.connect(DATABASE)
