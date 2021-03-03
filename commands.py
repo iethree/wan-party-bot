@@ -28,7 +28,7 @@ DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 @bot.command()
 async def bet(ctx, bet: int, guess: str):
-    await ctx.send(random_gif('vegas'))
+    await ctx.send(random_gif("vegas"))
 
     message = ""
     user_id = ctx.message.author.id
@@ -39,10 +39,12 @@ async def bet(ctx, bet: int, guess: str):
         "SELECT * FROM wanbux WHERE id = ?", (user_id,)
     ).fetchone()
 
-    is_naughty = bet_cursor.execute(
-        "SELECT * FROM naughty_list where id = ?",
-        (user_id,)
-    ).fetchone() is not None
+    is_naughty = (
+        bet_cursor.execute(
+            "SELECT * FROM naughty_list where id = ?", (user_id,)
+        ).fetchone()
+        is not None
+    )
 
     if bet <= 0 and not is_naughty:
         await ctx.send("Cute")
@@ -79,13 +81,13 @@ async def bet(ctx, bet: int, guess: str):
     if new_balance == 0:
         message += " You're broke now! Get lost, ya bum."
     bet_cursor.execute(
-        "UPDATE wanbux SET balance = ? WHERE id = ?",
-        (new_balance, user_id)
+        "UPDATE wanbux SET balance = ? WHERE id = ?", (new_balance, user_id)
     )
 
     conn.commit()
     conn.close()
     await ctx.send(message)
+
 
 async def get_balance(user_id):
     conn = sqlite3.connect(DATABASE)
@@ -95,15 +97,16 @@ async def get_balance(user_id):
     ).fetchone()
     return row
 
+
 async def update_balance(user_id, update):
     conn = sqlite3.connect(DATABASE)
     bal_cursor = conn.cursor()
     updated_row = bal_cursor.execute(
-        "UPDATE wanbux set balance = ? WHERE id = ?",
-        (update, user_id)
+        "UPDATE wanbux set balance = ? WHERE id = ?", (update, user_id)
     )
     return updated_row
-   
+
+
 @bot.command(name="balance")
 async def eval_balance(ctx):
     row = get_balance(ctx.message.author.id)
@@ -113,20 +116,25 @@ async def eval_balance(ctx):
 
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
 
+
 @bot.command
 async def beg(ctx):
     row = get_balance(ctx)
     if row is not None and row[0] == 0:
         await update_balance(ctx.message.author.id, 1)
-        await ctx.send("Try not to spend it all in one place f'{ctx.message.author.mention} 😎")
+        await ctx.send(
+            "Try not to spend it all in one place f'{ctx.message.author.mention} 😎"
+        )
     elif row is not None and row[0] > 0:
         await ctx.send("🖕")
     else:
         await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
+
 # @bot.command
 # async def pay(ctx, member: MemberConverter):
 #     # etc you get it
+
 
 @bot.command()
 async def rollin(ctx):
