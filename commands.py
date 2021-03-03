@@ -118,10 +118,10 @@ async def beg(ctx):
     row = get_balance(ctx)
     if row is not None and row[0] == 0:
         await update_balance(ctx.message.author.id, 1)
-        await ctx.send("Try not to spend it all in one place f"{ctx.message.author.mention} 😎")
-    else if row is not None and row[0] > 0
+        await ctx.send("Try not to spend it all in one place f'{ctx.message.author.mention} 😎")
+    elif row is not None and row[0] > 0:
         await ctx.send("🖕")
-    else
+    else:
         await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
 # @bot.command
