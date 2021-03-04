@@ -89,6 +89,15 @@ async def bet(ctx, bet: int, guess: str):
     await ctx.send(message)
 
 
+# fuck around and find out
+@bot.command(name="yeet")
+async def yeet_bet(ctx, guess: str):
+    balance = await get_balance(ctx.message.author.id)
+    await ctx.send("https://gph.is/g/4wMRo3n")
+    bet_amount = random.randrange(1, balance[0])
+    await bet(ctx, bet_amount, guess)
+
+
 async def get_balance(user_id):
     conn = sqlite3.connect(DATABASE)
     bal_cursor = conn.cursor()
@@ -117,10 +126,10 @@ async def eval_balance(ctx):
         return
 
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
-    
 
-@bot.command()
-async def myid(ctx):
+
+@bot.command(name="myid")
+async def my_id(ctx):
     await ctx.send(ctx.message.author.id)
 
 
@@ -138,7 +147,7 @@ async def beg(ctx):
         await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
 
-@bot.command
+@bot.command()
 async def rob(ctx):
     [balance] = await get_balance(ctx.message.author.id)
     for victim in ctx.message.mentions:
