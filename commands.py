@@ -138,6 +138,16 @@ async def beg(ctx):
         await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
 
+@bot.command
+async def rob(ctx):
+    [balance] = await get_balance(ctx.message.author.id)
+    for victim in ctx.message.mentions:
+        [stolen] = await get_balance(victim.id)
+        balance += stolen
+        await update_balance(victim.id, 0)
+    await update_balance(ctx.message.author.id, balance)
+
+
 # @bot.command
 # async def pay(ctx, member: MemberConverter):
 #     # etc you get it
