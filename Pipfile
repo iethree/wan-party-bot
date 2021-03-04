@@ -7,8 +7,8 @@ verify_ssl = true
 black = "*"
 
 [packages]
+giphy_client = "*"
 discord = "*"
-giphy_client ="*"
 
 [scripts]
 echo = "echo hello"
@@ -17,3 +17,6 @@ format = "pipenv run black commands.py get_error_message.py jokes.py main.py mes
 
 [requires]
 python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true

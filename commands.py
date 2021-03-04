@@ -104,26 +104,33 @@ async def update_balance(user_id, update):
     updated_row = bal_cursor.execute(
         "UPDATE wanbux set balance = ? WHERE id = ?", (update, user_id)
     )
+    conn.commit()
+    conn.close()
     return updated_row
 
 
 @bot.command(name="balance")
 async def eval_balance(ctx):
-    row = get_balance(ctx.message.author.id)
+    row = await get_balance(ctx.message.author.id)
     if row is not None:
         await ctx.send(f"{ctx.message.author.mention}'s balance is {row[0]} wanbux")
         return
 
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
+    
+
+@bot.command()
+async def myid(ctx):
+    await ctx.send(ctx.message.author.id)
 
 
-@bot.command
+@bot.command()
 async def beg(ctx):
-    row = get_balance(ctx)
+    row = await get_balance(ctx.message.author.id)
     if row is not None and row[0] == 0:
         await update_balance(ctx.message.author.id, 1)
         await ctx.send(
-            "Try not to spend it all in one place f'{ctx.message.author.mention} 😎"
+            f"Try not to spend it all in one place {ctx.message.author.mention} 😎"
         )
     elif row is not None and row[0] > 0:
         await ctx.send("🖕")
