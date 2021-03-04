@@ -118,11 +118,19 @@ async def update_balance(user_id, update):
     return updated_row
 
 
+# set balance command for testing purposes
+@bot.command(name="devset")
+async def dev_set(ctx, amount: int):
+    await update_balance(ctx.message.author.id, amount)
+    balance = await get_balance(ctx.message.author.id)
+    await ctx.send(f"Your balance has been set to {balance[0]}")
+
+
 @bot.command(name="balance")
 async def eval_balance(ctx):
-    row = await get_balance(ctx.message.author.id)
-    if row is not None:
-        await ctx.send(f"{ctx.message.author.mention}'s balance is {row[0]} wanbux")
+    balance = await get_balance(ctx.message.author.id)
+    if balance is not None:
+        await ctx.send(f"{ctx.message.author.mention}'s balance is {balance[0]} wanbux")
         return
 
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
