@@ -7,3 +7,4 @@ local_crap
 .idea
 .vscode
 Pipfile.lock
+venv/
