@@ -18,10 +18,10 @@ logging.basicConfig(level=logging.DEBUG, format="%(message)s")
 
 def prep_training(raw_haiku: str):
     """Load string, remove newline, split words on spaces, and return list."""
-    corpus = raw_haiku.replace("\n", " ").split()
+    corpus = raw_haiku.replace("\n", " ").replace('.','').replace(',','').lower().split()
     # remove words not in dictionary
-    cmudict = cmudict.return_dict()
-    filtered_corpus = [word for word in corpus if word in cmudict.keys()]
+    _cmudict = cmudict.return_dict()
+    filtered_corpus = [word for word in corpus if word in _cmudict.keys().__str__().lower()]
     return filtered_corpus
 
 
@@ -33,9 +33,9 @@ def map_word_to_word(corpus: list):
         if index < limit:
             suffix = corpus[index + 1]
             dict1_to_1[word].append(suffix)
-    logging.debug(
-        f"map word to word results for \"america\" = {dict1_to_1['america']}\n"
-    )
+    # logging.debug(
+    #     f"map word to word results for \"america\" = {dict1_to_1['america']}\n"
+    # )
     return dict1_to_1
 
 
@@ -48,9 +48,9 @@ def map_2_words_to_word(corpus: list):
             key = word + " " + corpus[index + 1]
             suffix = corpus[index + 2]
             dict2_to_1[key].append(suffix)
-    logging.debug(
-        f"map word to word results for \"american soldier\" = {dict2_to_1['american soldier']}\n"
-    )
+    # logging.debug(
+    #     f"map word to word results for \"american soldier\" = {dict2_to_1['american soldier']}\n"
+    # )
     return dict2_to_1
 
 
@@ -257,8 +257,8 @@ def main():
     input("\n\nPress Enter key to exit.")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 def gen_haiku(training_file):
     
