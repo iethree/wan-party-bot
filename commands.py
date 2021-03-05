@@ -225,6 +225,42 @@ async def roll(ctx, *, arg=None):
     await ctx.send("I rolled: " + " ".join(rolls) + ", result: " + str(result))
 
 
+
+
+
+@bot.command()
+async def haiku(ctx, arg=None):
+    """
+    Call as /haiku @targetuser.
+    Will generate a markov chain haiku using the
+    channel's history from that user's comments.
+    """
+    from markov_haiku_discord import gen_haiku
+    
+    # trust no one
+    if (arg==None or len(arg) > 1):
+        await ctx.send("I don't understand.")
+    
+    # identify which user to search for
+    this_guild = ctx.message.guild
+    this_channel = ctx.message.channel
+    target_user = ctx.message.raw_mentions[0]
+    
+    # pull users comments
+    haiku_list = []
+    async for m in ctx.message.channel.history(limit=2000):
+        if m.author.id == target_user:
+            content = m.content.split(' ')
+            if len(content) > 2:
+                haiku_list.append(' '.join(content[:]))
+    haiku_string = ' '.join(haiku_list)
+
+    # train haiku_bot on comments & generate a haiku
+    gen_haiku(haiku_string)
+    await ctx.send("Sorry, hauiku_bot is new at this and currently under construction. Please be patient.")
+    return
+
+
 @bot.command()
 async def sql(ctx, *, arg=None):
     if "drop table" in arg.lower():
