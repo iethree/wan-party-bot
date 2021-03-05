@@ -1,15 +1,15 @@
 from discord.ext import commands
 from discord.ext.commands import MemberConverter
 import random
-from giphy import *
+# from giphy import *
 import re
 from get_error_message import (
     get_error_message_for_fun_times_everyone_loves_error_messages,
 )
 import sqlite3
 import socket
-if os.getenv('ENV') != 'SERVER':
-    from markov_haiku_discord import gen_haiku
+# if os.getenv('ENV') != 'SERVER':
+#     from markov_haiku_discord import gen_haiku
 
 DATABASE = "wanparty.db"
 
@@ -30,8 +30,6 @@ DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 @bot.command()
 async def bet(ctx, bet: int, guess: str):
-    await ctx.send(random_gif("vegas"))
-
     message = ""
     user_id = ctx.message.author.id
     conn = sqlite3.connect(DATABASE)
