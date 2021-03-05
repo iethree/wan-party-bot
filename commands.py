@@ -1,14 +1,14 @@
 from discord.ext import commands
 from discord.ext.commands import MemberConverter
 import random
-# from giphy import *
+from giphy import *
 import re
 from get_error_message import (
     get_error_message_for_fun_times_everyone_loves_error_messages,
 )
 import sqlite3
 import socket
-# from markov_haiku_discord import gen_haiku
+from markov_haiku_discord import gen_haiku
 
 DATABASE = "wanparty.db"
 
