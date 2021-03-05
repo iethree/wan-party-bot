@@ -238,8 +238,9 @@ async def haiku(ctx, arg=None):
     from markov_haiku_discord import gen_haiku
     
     # trust no one
-    if (arg==None or len(arg) > 1):
+    if (arg==None or len(arg) != 1):
         await ctx.send("I don't understand.")
+        return
     
     # identify which user to search for
     this_guild = ctx.message.guild
