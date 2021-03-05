@@ -248,10 +248,10 @@ async def haiku(ctx, *, arg=None):
 
         # pull users comments
         haiku_list = []
-        async for m in ctx.message.channel.history(limit=1000):
+        async for m in ctx.message.channel.history(limit=1500):
             if m.author.id == target_user:
                 content = m.content.split(' ')
-                if len(content) > 2:
+                if len(content) > 4:
                     haiku_list.append(' '.join(content[:]))
         haiku_string = ' '.join(haiku_list)
 
