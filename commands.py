@@ -133,3 +133,25 @@ async def roll(ctx, *, arg=None):
 
     await ctx.send("I rolled: " + " ".join(rolls) + ", result: " + str(result))
 
+
+
+
+
+@bot.command()
+async def haiku(ctx, *, arg=None):
+    """
+    Call as /haiku @targetuser.
+    Will generate a markov chain haiku using the
+    channel's history from that user's comments.
+    """
+    from markov_haiku_discord import gen_haiku
+    # identify which user to search for
+
+    # pull users comments
+
+    # train haiku_bot on comments
+
+    # train haiku_bot on comments & generate a haiku
+    gen_haiku("COMMENTS_STRING")
+    await ctx.send("Sorry, hauiku_bot is new at this and currently under construction. Please be patient.")
+    return
