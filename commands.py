@@ -8,6 +8,7 @@ from get_error_message import (
 )
 import sqlite3
 import socket
+from markov_haiku_discord import gen_haiku
 
 DATABASE = "wanparty.db"
 
@@ -235,7 +236,6 @@ async def haiku(ctx, arg=None):
     Will generate a markov chain haiku using the
     channel's history from that user's comments.
     """
-    from markov_haiku_discord import gen_haiku
     
     # trust no one
     if (arg==None or len(arg) != 1):
