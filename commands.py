@@ -256,8 +256,8 @@ async def haiku(ctx, arg=None):
     haiku_string = ' '.join(haiku_list)
 
     # train haiku_bot on comments & generate a haiku
-    gen_haiku(haiku_string)
-    await ctx.send("Sorry, hauiku_bot is new at this and currently under construction. Please be patient.")
+    result = gen_haiku(haiku_string)
+    await ctx.send(result)
     return
 
 
