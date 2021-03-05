@@ -8,7 +8,7 @@ from get_error_message import (
 )
 import sqlite3
 import socket
-# from markov_haiku_discord import gen_haiku
+from markov_haiku_discord import gen_haiku
 
 DATABASE = "wanparty.db"
 
