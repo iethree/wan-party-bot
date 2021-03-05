@@ -247,6 +247,7 @@ async def haiku(ctx, arg=None):
     this_channel = ctx.message.channel
     target_user = ctx.message.raw_mentions[0]
     
+    
     # pull users comments
     haiku_list = []
     async for m in ctx.message.channel.history(limit=100):
