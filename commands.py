@@ -234,9 +234,6 @@ async def haiku(ctx, *, arg=None):
     Will generate a markov chain haiku using the
     channel's history from that user's comments.
     """
-    if (os.getenv('ENV') == 'SERVER'):
-        await ctx.send("I don't got the horespower for that, sorry...")
-        return
     
     # trust no one
     if (len(ctx.message.raw_mentions) < 1):
