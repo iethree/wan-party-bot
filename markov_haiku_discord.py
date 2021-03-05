@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG, format="%(message)s")
 
 def prep_training(raw_haiku: str):
     """Load string, remove newline, split words on spaces, and return list."""
-    corpus = raw_haiku.replace("\n", " ").replace('.','').replace(',','').lower().split()
+    corpus = raw_haiku.replace("\n", " ").replace('.','').replace(',','').replace('/','').lower().split()
     # remove words not in dictionary
     _cmudict = cmudict.return_dict()
     filtered_corpus = [word for word in corpus if word in _cmudict.keys().__str__().lower()]

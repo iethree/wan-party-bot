@@ -230,7 +230,7 @@ async def roll(ctx, *, arg=None):
 
 
 @bot.command()
-async def haiku(ctx, arg=None):
+async def haiku(ctx, *, arg=None):
     """
     Call as /haiku @targetuser.
     Will generate a markov chain haiku using the
@@ -238,28 +238,33 @@ async def haiku(ctx, arg=None):
     """
     
     # trust no one
-    if (arg==None or len(arg) != 1):
-        await ctx.send("I don't understand.")
+    if (len(ctx.message.raw_mentions) < 1):
+        await ctx.send("I need a muse. @somebody, fool.")
         return
     
-    # identify which user to search for
-    this_guild = ctx.message.guild
-    this_channel = ctx.message.channel
-    target_user = ctx.message.raw_mentions[0]
-    
-    
-    # pull users comments
-    haiku_list = []
-    async for m in ctx.message.channel.history(limit=100):
-        if m.author.id == target_user:
-            content = m.content.split(' ')
-            if len(content) > 2:
-                haiku_list.append(' '.join(content[:]))
-    haiku_string = ' '.join(haiku_list)
+    try:
+        # identify which user to search for
+        this_guild = ctx.message.guild
+        this_channel = ctx.message.channel
+        target_user = ctx.message.raw_mentions[0]
 
-    # train haiku_bot on comments & generate a haiku
-    result = gen_haiku(haiku_string)
-    await ctx.send(result)
+        # pull users comments
+        haiku_list = []
+        async for m in ctx.message.channel.history(limit=100):
+            if m.author.id == target_user:
+                content = m.content.split(' ')
+                if len(content) > 2:
+                    haiku_list.append(' '.join(content[:]))
+        haiku_string = ' '.join(haiku_list)
+
+        # train haiku_bot on comments & generate a haiku
+        result_list = gen_haiku(haiku_string)
+
+        result_string = '\n> '.join(map(lambda line : ' '.join(line), result_list))
+        await ctx.send('> ' + result_string)
+    except Exception as e:
+        await ctx.send("Inspiration eludes me, or " + repr(e) + " one of the two...")
+
     return
 
 

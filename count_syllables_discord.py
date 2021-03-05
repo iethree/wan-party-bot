@@ -20,13 +20,16 @@ def count_syllables(words):
         word = word.strip(punctuation)
         if word.endswith("'s") or word.endswith("’s"):
             word = word[:-2]
-        if word not in cmudict.keys().__str__().lower():
+        if word.upper() not in cmudict.keys().__str__():
             continue
         else:
-            for phonemes in cmudict[word.upper()][0]:
-                for phoneme in phonemes:
-                    if phoneme[-1].isdigit():
-                        num_sylls += 1
+            try:
+                for phonemes in cmudict[word.upper()][0]:
+                    for phoneme in phonemes:
+                        if phoneme[-1].isdigit():
+                            num_sylls += 1
+            except Exception as e:
+                continue
     return num_sylls
 
 
