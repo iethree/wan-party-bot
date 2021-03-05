@@ -4,13 +4,19 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "*"
 
 [packages]
+giphy_client = "*"
 discord = "*"
 
 [scripts]
 echo = "echo hello"
 start = "pipenv run python3 ./main.py"
+format = "pipenv run black commands.py get_error_message.py jokes.py main.py message_handler.py reaction.py tables.py test_reaction.py"
 
 [requires]
 python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true

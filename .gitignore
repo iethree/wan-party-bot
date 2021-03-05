@@ -6,3 +6,5 @@ __pycache__/
 local_crap
 .idea
 venv/
+.vscode
+Pipfile.lock
