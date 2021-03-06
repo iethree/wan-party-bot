@@ -308,6 +308,13 @@ async def jail(ctx, action=None, person=None):
                     await ctx.send(f'busted out <@!{jailbird}> !')
                 else:
                     await ctx.send(f'<@!{jailbird}> isn\'t in jail!')
+    if action == 'bribe':
+        balance = await get_balance(ctx.message.author.id)
+        amount = random.randrange(1, balance[0])
+        await update_balance(ctx.message.author.id, amount)
+        bust_out(ctx.message.author.id)
+        await ctx.send(f'{ctx.message.author.mention} has been shown mercy')
+
     if (action == 'beg' or action == 'mercy') and is_naughty(ctx.message.author.id):
         beg_mercy(ctx.message.author.id)
         await ctx.send(f'{ctx.message.author.mention} has been shown mercy')
