@@ -18,7 +18,7 @@ STATIC_REACTIONS = [
     Reaction("ps5", "👎"),
     Reaction("how you doin bot?", "👍"),
     MatchingReaction(
-        lambda c, m: sometimes(0.1) and "shplay" in m.author.display_name.lower(), "🙄"
+        lambda c, m: sometimes(0.02) and "shplay" in m.author.display_name.lower(), "🙄"
     ),
 ]
 
