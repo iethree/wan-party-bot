@@ -294,12 +294,24 @@ async def rhyme(ctx, *, arg=None):
         rhymes = rhyme(word)
         output = ""
         for pronunciation in rhymes.keys():
-            output += (
-                pronunciation
-                + " rhymes with:\n"
-                + ", ".join(rhymes[pronunciation])
-                + f"\n\nA total of {len(rhymes[pronunciation])} rhymes."
-            )
+            if len(", ".join(rhymes[pronunciation])) > 1000:
+                output += (
+                    pronunciation
+                    + " rhymes with:\n"
+                    + ", ".join(rhymes[pronunciation][:30])
+                    + "\n--snip--\n"
+                    + ", ".join(
+                        rhymes[pronunciation][len(rhymes[pronunciation]) - 30 :]
+                    )
+                    + f"\n\nA total of {len(rhymes[pronunciation])} rhymes."
+                )
+            else:
+                output += (
+                    pronunciation
+                    + " rhymes with:\n"
+                    + ", ".join(rhymes[pronunciation])
+                    + f"\n\nA total of {len(rhymes[pronunciation])} rhymes."
+                )
         await ctx.send("> " + output)
     except Exception as e:
         await ctx.send(
