@@ -26,10 +26,7 @@ Phoneme Example Translation    Phoneme Example Translation
     ZH      seizure S IY ZH ER
 """
 
-if __name__ == "__main__":
-    import cmudict
-else:
-    import corpora.cmudict.cmudict as cmudict
+import corpora.cmudict.cmudict as cmudict
 
 PHONEMES = {
     "AA",

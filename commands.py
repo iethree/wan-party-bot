@@ -289,7 +289,7 @@ async def rhyme(ctx, *, arg=None):
         return
 
     try:
-        import corpora.cmudict.rhymes.rhyme as rhyme
+        from rhymes import rhyme
 
         rhymes = rhyme(word)
         output = ""
