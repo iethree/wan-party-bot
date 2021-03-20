@@ -284,12 +284,12 @@ async def rhyme(ctx, *, arg=None):
 
     # trust no one
     word = arg  # ctx.message.content
-    if word[1:].split(" ") != 1:
+    if len(word.split(" ")) != 1:
         await ctx.send("I need a word to contemplate. `/rhyme word`, fool.", word)
         return
 
     try:
-        from corpora.cmudict.rhymes import rhyme
+        import corpora.cmudict.rhymes.rhyme as rhyme
 
         rhymes = rhyme(word)
         output = ""

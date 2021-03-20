@@ -25,6 +25,12 @@ Phoneme Example Translation    Phoneme Example Translation
     Y       yield   Y IY L D       Z       zee     Z IY
     ZH      seizure S IY ZH ER
 """
+
+if __name__ == "__main__":
+    import cmudict
+else:
+    import corpora.cmudict.cmudict as cmudict
+
 PHONEMES = {
     "AA",
     "AE",
@@ -142,9 +148,6 @@ def rhyme(word: str, rhyming_type: int = 0) -> dict:
     >>> rhyme(pool)
     >>> {pool: [rhyme1, rhyme2, etc...]}
     """
-
-    import cmudict
-
     DICTIONARY = cmudict.return_dict()
 
     rhyming_dictionary = {word.upper(): []}
