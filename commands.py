@@ -295,10 +295,10 @@ async def rhyme(ctx, *, arg=None):
         output = ""
         for pronunciation in rhymes.keys():
             output += (
-                pronunciation,
-                " rhymes with:\n",
-                rhymes[pronunciation],
-                f"\n\nA total of {len(rhymes[pronunciation])} rhymes.",
+                pronunciation
+                + " rhymes with:\n"
+                + rhymes[pronunciation]
+                + f"\n\nA total of {len(rhymes[pronunciation])} rhymes."
             )
         await ctx.send("> " + output)
     except Exception as e:
