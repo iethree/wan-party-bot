@@ -297,7 +297,7 @@ async def rhyme(ctx, *, arg=None):
             output += (
                 pronunciation
                 + " rhymes with:\n"
-                + rhymes[pronunciation]
+                + ", ".join(rhymes[pronunciation])
                 + f"\n\nA total of {len(rhymes[pronunciation])} rhymes."
             )
         await ctx.send("> " + output)
