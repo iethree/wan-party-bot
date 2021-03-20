@@ -51,7 +51,7 @@ async def bet(ctx, bet: int, guess: str):
         return
 
     if user is None:
-        
+
         message += f"Welcome to the WAN Casino {ctx.message.author.mention}."
         message += " Have 5 Wanbux on the house.\n"
         bet_cursor.execute(
@@ -61,7 +61,7 @@ async def bet(ctx, bet: int, guess: str):
                 5,
             ),
         )
-    
+
     balance = user[1] if user is not None else 5
 
     if bet > balance:
@@ -143,10 +143,14 @@ async def my_id(ctx):
     user_name = ctx.message.author.display_name
     await ctx.send(ctx.message.author.id)
 
+
 @bot.command(name="id")
 async def id(ctx):
     if len(ctx.message.raw_mentions):
-        await ctx.send('> ' + '\n > '.join(map(lambda m : str(m), ctx.message.raw_mentions)))
+        await ctx.send(
+            "> " + "\n > ".join(map(lambda m: str(m), ctx.message.raw_mentions))
+        )
+
 
 @bot.command()
 async def beg(ctx):
@@ -232,9 +236,6 @@ async def roll(ctx, *, arg=None):
     await ctx.send("I rolled: " + " ".join(rolls) + ", result: " + str(result))
 
 
-
-
-
 @bot.command()
 async def haiku(ctx, *, arg=None):
     """
@@ -242,12 +243,12 @@ async def haiku(ctx, *, arg=None):
     Will generate a markov chain haiku using the
     channel's history from that user's comments.
     """
-    
+
     # trust no one
-    if (len(ctx.message.raw_mentions) < 1):
+    if len(ctx.message.raw_mentions) < 1:
         await ctx.send("I need a muse. @somebody, fool.")
         return
-    
+
     try:
         # identify which user to search for
         this_guild = ctx.message.guild
@@ -258,18 +259,54 @@ async def haiku(ctx, *, arg=None):
         haiku_list = []
         async for m in ctx.message.channel.history(limit=1500):
             if m.author.id == target_user:
-                content = m.content.split(' ')
+                content = m.content.split(" ")
                 if len(content) > 4:
-                    haiku_list.append(' '.join(content[:]))
-        haiku_string = ' '.join(haiku_list)
+                    haiku_list.append(" ".join(content[:]))
+        haiku_string = " ".join(haiku_list)
 
         # train haiku_bot on comments & generate a haiku
         result_list = gen_haiku(haiku_string)
 
-        result_string = '\n> '.join(map(lambda line : ' '.join(line), result_list))
-        await ctx.send('> ' + result_string)
+        result_string = "\n> ".join(map(lambda line: " ".join(line), result_list))
+        await ctx.send("> " + result_string)
     except Exception as e:
         await ctx.send("Inspiration eludes me, or " + repr(e) + " one of the two...")
+
+    return
+
+
+@bot.command()
+async def rhyme(ctx, *, arg=None):
+    """
+    Call as /rhyme 'word'.
+    Will generate a list of rhymes from the word.
+    """
+
+    # trust no one
+    word = ctx.message.content
+    if word[1:].split(" ") != 1:
+        await ctx.send("I need a word to contemplate. `/rhyme word`, fool.")
+        return
+
+    try:
+        from corpora.cmudict.rhymes import rhyme
+
+        rhymes = rhyme(word)
+        output = ""
+        for pronunciation in rhymes.keys():
+            output += (
+                pronunciation,
+                " rhymes with:\n",
+                rhymes[pronunciation],
+                f"\n\nA total of {len(rhymes[pronunciation])} rhymes.",
+            )
+        await ctx.send("> " + output)
+    except Exception as e:
+        await ctx.send(
+            "I'm having trouble with this one, you're probably making it up, or "
+            + repr(e)
+            + ", one of the two..."
+        )
 
     return
 
@@ -278,7 +315,7 @@ async def haiku(ctx, *, arg=None):
 async def sql(ctx, *, arg=None):
 
     if is_naughty(ctx.message.author.id):
-        result = 'Your SQL privileges have been revoked while in jail'
+        result = "Your SQL privileges have been revoked while in jail"
     else:
         try:
             conn = sqlite3.connect(DATABASE)
@@ -293,95 +330,137 @@ async def sql(ctx, *, arg=None):
 
     await ctx.send("```sql\n" + str(result) + "\n```")
 
+
 @bot.command()
 async def jail(ctx, action=None, person=None):
 
-    if action == 'break' or action == 'bust':
+    if action == "break" or action == "bust":
         if is_naughty(ctx.message.author.id):
-            await ctx.send('You can\'t break anyone out from the inside')
+            await ctx.send("You can't break anyone out from the inside")
         elif person == None:
-            await ctx.send('You gotta @someone to bust out')
+            await ctx.send("You gotta @someone to bust out")
         elif len(ctx.message.raw_mentions):
             for jailbird in ctx.message.raw_mentions:
                 if is_naughty(jailbird):
                     bust_out(jailbird)
-                    await ctx.send(f'busted out <@!{jailbird}> !')
+                    await ctx.send(f"busted out <@!{jailbird}> !")
                 else:
-                    await ctx.send(f'<@!{jailbird}> isn\'t in jail!')
-    if action == 'bribe':
+                    await ctx.send(f"<@!{jailbird}> isn't in jail!")
+    if action == "bribe":
         balance = await get_balance(ctx.message.author.id)
         amount = random.randrange(1, balance[0])
         await update_balance(ctx.message.author.id, amount)
         bust_out(ctx.message.author.id)
-        await ctx.send(f'{ctx.message.author.mention} has been shown mercy')
+        await ctx.send(f"{ctx.message.author.mention} has been shown mercy")
 
-    if (action == 'beg' or action == 'mercy') and is_naughty(ctx.message.author.id):
+    if (action == "beg" or action == "mercy") and is_naughty(ctx.message.author.id):
         beg_mercy(ctx.message.author.id)
-        await ctx.send(f'{ctx.message.author.mention} has been shown mercy')
-    if action == 'frame' and person != None:
+        await ctx.send(f"{ctx.message.author.mention} has been shown mercy")
+    if action == "frame" and person != None:
         for victim in ctx.message.raw_mentions:
             if not is_naughty(victim):
                 frame(victim)
-                await ctx.send(f'framed <@!{victim}> !')
+                await ctx.send(f"framed <@!{victim}> !")
 
     await jail_update(ctx)
 
 
-    
 async def jail_update(ctx):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
-    presumed_guilty = 100
-    sentence = '+1 hour'
 
-    cursor.execute('SELECT jail.id, users.name FROM jail LEFT JOIN users ON jail.id = users.id WHERE jail.out_at < datetime();')
+    presumed_guilty = 100
+    sentence = "+1 hour"
+
+    cursor.execute(
+        "SELECT jail.id, users.name FROM jail LEFT JOIN users ON jail.id = users.id WHERE jail.out_at < datetime();"
+    )
     getting_out = cursor.fetchall()
 
-    cursor.execute('SELECT wanbux.id, users.name, balance FROM wanbux LEFT JOIN users ON users.id = wanbux.id WHERE wanbux.balance > ?;', (presumed_guilty,))
+    cursor.execute(
+        "SELECT wanbux.id, users.name, balance FROM wanbux LEFT JOIN users ON users.id = wanbux.id WHERE wanbux.balance > ?;",
+        (presumed_guilty,),
+    )
     going_in = cursor.fetchall()
 
     # let em out when they've done their time
-    cursor.execute('DELETE FROM jail WHERE out_at < datetime();')
+    cursor.execute("DELETE FROM jail WHERE out_at < datetime();")
 
     # put em in when they did wrong and confiscate their money
-    cursor.execute("INSERT INTO JAIL (id, out_at) SELECT id, datetime('now', ?) FROM wanbux WHERE wanbux.balance > ?;", (sentence, presumed_guilty, ))
-    cursor.execute("UPDATE wanbux SET balance = 0 WHERE balance > ?;", (presumed_guilty,))
+    cursor.execute(
+        "INSERT INTO JAIL (id, out_at) SELECT id, datetime('now', ?) FROM wanbux WHERE wanbux.balance > ?;",
+        (
+            sentence,
+            presumed_guilty,
+        ),
+    )
+    cursor.execute(
+        "UPDATE wanbux SET balance = 0 WHERE balance > ?;", (presumed_guilty,)
+    )
 
-    cursor.execute('SELECT jail.id, users.name, jail.out_at FROM jail LEFT JOIN users ON jail.id = users.id WHERE jail.out_at > datetime();')
+    cursor.execute(
+        "SELECT jail.id, users.name, jail.out_at FROM jail LEFT JOIN users ON jail.id = users.id WHERE jail.out_at > datetime();"
+    )
     staying_in = cursor.fetchall()
 
     conn.commit()
     conn.close()
 
-    response = ''
+    response = ""
 
     if len(getting_out):
-        response += '\n**They\'ve done their time, they\'re getting out:**\n'
-        response += '```python\n' + '\n'.join(map(lambda u : u['name'] or str(u['id']), getting_out)) + '\n```'
+        response += "\n**They've done their time, they're getting out:**\n"
+        response += (
+            "```python\n"
+            + "\n".join(map(lambda u: u["name"] or str(u["id"]), getting_out))
+            + "\n```"
+        )
     if len(going_in):
-        response += '\n**Caught red-handed, they\'re going in:**\n'
-        response += '```python\n' + '\n'.join(map(lambda u : (u['name'] or str(u['id'])) + ': ' + str(u['balance']) + ' wbx seized', going_in)) + '\n```'
+        response += "\n**Caught red-handed, they're going in:**\n"
+        response += (
+            "```python\n"
+            + "\n".join(
+                map(
+                    lambda u: (u["name"] or str(u["id"]))
+                    + ": "
+                    + str(u["balance"])
+                    + " wbx seized",
+                    going_in,
+                )
+            )
+            + "\n```"
+        )
     if len(staying_in):
-        response += '\n**Jailhouse Census:**\n'
-        response += '```sql\n' + '\n'.join(map(lambda u : (u['name'] or str(u['id'])) + ': releasing in ' + time_until(u['out_at']), staying_in)) + '\n```'
+        response += "\n**Jailhouse Census:**\n"
+        response += (
+            "```sql\n"
+            + "\n".join(
+                map(
+                    lambda u: (u["name"] or str(u["id"]))
+                    + ": releasing in "
+                    + time_until(u["out_at"]),
+                    staying_in,
+                )
+            )
+            + "\n```"
+        )
 
+    await ctx.send(response or "Jail's empty!")
 
-    await ctx.send(response or 'Jail\'s empty!')
 
 # doesn't work
 @bot.command()
-async def who (ctx):
+async def who(ctx):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
     try:
         members = ctx.message.guild.members
-        print('channel ' + str(ctx.message.guild))
-        print('members ' + str(members))
+        print("channel " + str(ctx.message.guild))
+        print("members " + str(members))
         for m in members:
-            print(str(m.id) + ' : ' + m.display_name)
+            print(str(m.id) + " : " + m.display_name)
             cursor.execute(
                 "INSERT INTO users(id, name) VALUES(?, ?) ON CONFLICT(id) DO UPDATE SET name=?",
                 (
@@ -395,25 +474,26 @@ async def who (ctx):
 
     conn.commit()
     conn.close()
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction("✅")
+
 
 def time_until(time):
-    time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+    time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
     delta = time - datetime.now()
     return str(delta)
+
 
 def is_naughty(user_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     is_naughty = (
-        cursor.execute(
-            "SELECT * FROM jail where id = ?", (user_id,)
-        ).fetchone()
+        cursor.execute("SELECT * FROM jail where id = ?", (user_id,)).fetchone()
         is not None
     )
     conn.commit()
     conn.close()
     return is_naughty
+
 
 def bust_out(user_id):
     conn = sqlite3.connect(DATABASE)
@@ -422,6 +502,7 @@ def bust_out(user_id):
     conn.commit()
     conn.close()
 
+
 def frame(user_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -429,9 +510,12 @@ def frame(user_id):
     conn.commit()
     conn.close()
 
+
 def beg_mercy(user_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("UPDATE jail SET out_at=datetime(out_at, '-1 minute') WHERE id = ?", (user_id,))
+    cursor.execute(
+        "UPDATE jail SET out_at=datetime(out_at, '-1 minute') WHERE id = ?", (user_id,)
+    )
     conn.commit()
     conn.close()
