@@ -283,7 +283,7 @@ async def rhyme(ctx, *, arg=None):
     """
 
     # trust no one
-    word = ctx.message.content
+    word = arg  # ctx.message.content
     if word[1:].split(" ") != 1:
         await ctx.send("I need a word to contemplate. `/rhyme word`, fool.")
         return
