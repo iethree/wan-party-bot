@@ -553,3 +553,8 @@ async def willy(ctx):
 async def thomas(ctx):
     thomas = get_random_quote('thomas').replace('\n', '\n> ')
     await ctx.send(f"> {thomas} ")
+
+@bot.command()
+async def jane(ctx):
+    jane = get_random_quote('jane').replace('\n', '\n> ')
+    await ctx.send(f"> {jane} ")
