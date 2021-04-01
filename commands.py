@@ -543,3 +543,9 @@ async def dick(ctx):
 async def dickens(ctx):
     dickens = get_random_dickens().replace('\n', '\n> ')
     await ctx.send(f"> {dickens} ")
+
+@bot.command()
+async def willy(ctx):
+    willy = get_random_willy().replace('\n', '\n> ')
+    await ctx.send(f"> {willy} ")
+    

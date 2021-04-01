@@ -6,6 +6,9 @@ dicks = dick.split('\n\n')
 dickens = open('./data/bleak-house.txt').read()
 dickenses = dickens.split('\n\n')
 
+willy = open('./data/willy.txt').read()
+willies = willy.split('\n\n')
+
 def get_random_dick():
   random_dick = ''
 
@@ -14,12 +17,10 @@ def get_random_dick():
   
   return random_dick
 
-def get_random_dickens():
-  random_dickens = ''
+def get_random_willy():
+  random_willy = ''
 
-  while (len(random_dickens) < 100 or len(random_dickens) > 800):
-    random_dickens = random.choice(dickenses)
+  while (len(random_willy) < 100 or len(random_willy) > 800):
+    random_willy = random.choice(willies)
   
-  return random_dickens
-
-print(get_random_dickens())
+  return random_willy
