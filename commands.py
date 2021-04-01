@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord.ext.commands import MemberConverter
 from datetime import *
 import random
+from dick import *
 from giphy import *
 import re
 from get_error_message import (
@@ -531,3 +532,9 @@ def beg_mercy(user_id):
     )
     conn.commit()
     conn.close()
+
+
+@bot.command()
+async def dick(ctx):
+    dick = get_random_dick().replace('\n', '\n> ')
+    await ctx.send(f"> {dick} ")
