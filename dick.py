@@ -23,3 +23,6 @@ def get_random_quote(name):
     choice = random.choice(pool)
   
   return choice
+
+
+print(get_random_quote('jane'))
