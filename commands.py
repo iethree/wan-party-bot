@@ -536,20 +536,20 @@ def beg_mercy(user_id):
 
 @bot.command()
 async def dick(ctx):
-    dick = get_random_dick().replace('\n', '\n> ')
+    dick = get_random_quote('dick').replace('\n', '\n> ')
     await ctx.send(f"> {dick} ")
 
 @bot.command()
 async def dickens(ctx):
-    dickens = get_random_dickens().replace('\n', '\n> ')
+    dickens = get_random_quote('dickens').replace('\n', '\n> ')
     await ctx.send(f"> {dickens} ")
 
 @bot.command()
 async def willy(ctx):
-    willy = get_random_willy().replace('\n', '\n> ')
+    willy = get_random_quote('willy').replace('\n', '\n> ')
     await ctx.send(f"> {willy} ")
 
 @bot.command()
 async def thomas(ctx):
-    thomas = get_random_thomas().replace('\n', '\n> ')
+    thomas = get_random_quote('thomas').replace('\n', '\n> ')
     await ctx.send(f"> {thomas} ")
