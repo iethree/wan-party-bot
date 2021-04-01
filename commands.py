@@ -538,3 +538,8 @@ def beg_mercy(user_id):
 async def dick(ctx):
     dick = get_random_dick().replace('\n', '\n> ')
     await ctx.send(f"> {dick} ")
+
+@bot.command()
+async def dickens(ctx):
+    dickens = get_random_dickens().replace('\n', '\n> ')
+    await ctx.send(f"> {dickens} ")
