@@ -1,13 +1,9 @@
 import random
 
-dick = open('./data/dick.txt').read()
-dicks = dick.split('\n\n')
-
-dickens = open('./data/bleak-house.txt').read()
-dickenses = dickens.split('\n\n')
-
-willy = open('./data/willy.txt').read()
-willies = willy.split('\n\n')
+dicks = open('./data/dick.txt').read().split('\n\n')
+dickenses = open('./data/bleak-house.txt').read().split('\n\n')
+willies = open('./data/willy.txt').read().split('\n\n')
+summas = open('./data/summa.txt').read().split('\n\n')
 
 def get_random_dick():
   random_dick = ''
@@ -24,3 +20,11 @@ def get_random_willy():
     random_willy = random.choice(willies)
   
   return random_willy
+
+def get_random_thomas():
+  random_thomas = ''
+
+  while (len(random_thomas) < 100 or len(random_thomas) > 800):
+    random_thomas = random.choice(summas)
+  
+  return random_thomas
