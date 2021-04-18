@@ -5,5 +5,4 @@
 
 ## Forthcoming Features
 
-- ability to add migrations to Sqlite DB
 - ability to update crontab
