@@ -9,3 +9,5 @@ venv/
 .vscode
 Pipfile.lock
 venv/
+
+.poo
