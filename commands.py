@@ -533,6 +533,10 @@ def beg_mercy(user_id):
     conn.commit()
     conn.close()
 
+@bot.command()
+async def game_poll(ctx):
+    poll_text = open('./weekly_games_poll.txt', encoding='utf8').read()
+    await ctx.send(poll_text)
 
 @bot.command()
 async def dick(ctx):

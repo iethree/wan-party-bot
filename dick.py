@@ -1,10 +1,10 @@
 import random
 
-dicks = open('./data/dick.txt').read().split('\n\n')
-dickenses = open('./data/bleak-house.txt').read().split('\n\n')
-willies = open('./data/willy.txt').read().split('\n\n')
-summas = open('./data/summa.txt').read().split('\n\n')
-janes = open('./data/jane.txt').read().split('\n\n')
+dicks = open('./data/dick.txt', encoding='utf8').read().split('\n\n')
+dickenses = open('./data/bleak-house.txt', encoding='utf8').read().split('\n\n')
+willies = open('./data/willy.txt', encoding='utf8').read().split('\n\n')
+summas = open('./data/summa.txt', encoding='utf8').read().split('\n\n')
+janes = open('./data/jane.txt', encoding='utf8').read().split('\n\n')
 
 
 dudes = {
@@ -25,4 +25,3 @@ def get_random_quote(name):
   return choice
 
 
-print(get_random_quote('jane'))

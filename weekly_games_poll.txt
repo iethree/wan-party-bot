@@ -1,0 +1,7 @@
+/poll question: What to play on Sunday?
+choice_a: :fortnite: fortnite
+choice_b: :splitgate: splitgate
+choice_c: :overwatch: overwatch
+choice_d: :dwarf: deep rock galactic
+choice_e: :killerqueen: killer queen black
+choice_f: :sea_of_thieves: sea of thieves
