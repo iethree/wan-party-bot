@@ -23,5 +23,3 @@ def get_random_quote(name):
     choice = random.choice(pool)
   
   return choice
-
-
