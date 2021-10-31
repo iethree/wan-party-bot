@@ -67,6 +67,7 @@ async def respond_to(client, message):
 
     reactions = STATIC_REACTIONS + [
         Reaction("the way", get_emoji(message.guild, "mando")),
+        Reaction("meta", get_emoji(message.guild, "meta")),
         MatchingReaction(
             lambda c, m: "star wars" in c and m.channel.name != "star-wars",
             get_emoji(message.guild, "stormtrooper"),
