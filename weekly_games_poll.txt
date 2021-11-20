@@ -6,3 +6,4 @@ choice_d: :dwarf: deep rock galactic
 choice_e: :killerqueen: killer queen black
 choice_f: :sea_of_thieves: sea of thieves
 choice_g: :rocket_league: rocket league
+choice_h: :halo: halo infinite
