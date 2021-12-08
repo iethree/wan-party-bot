@@ -74,7 +74,10 @@ async def respond_to(client, message):
         ),
     ]
 
-    responses = [["joke", random_joke()]]
+    responses = [
+        ["joke", random_joke()],
+        [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"]
+    ]
 
     for reaction in reactions:
         if reaction.matches(content, message):
