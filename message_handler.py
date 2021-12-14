@@ -86,5 +86,5 @@ async def respond_to(client, message):
             await reaction.apply_to(message)
 
     for response in responses:
-        if response[0] in content.lower():
+        if response[0] in content:
             await message.channel.send(response[1])
