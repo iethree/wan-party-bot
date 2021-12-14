@@ -78,6 +78,7 @@ async def respond_to(client, message):
         ["joke", random_joke()],
         [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"]
+        ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"]
     ]
 
     for reaction in reactions:
@@ -85,5 +86,5 @@ async def respond_to(client, message):
             await reaction.apply_to(message)
 
     for response in responses:
-        if response[0] in content:
+        if response[0] in content.lower():
             await message.channel.send(response[1])
