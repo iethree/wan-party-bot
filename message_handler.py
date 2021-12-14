@@ -77,8 +77,8 @@ async def respond_to(client, message):
     responses = [
         ["joke", random_joke()],
         [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"]
-        ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"]
+        ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
     ]
 
     for reaction in reactions:
