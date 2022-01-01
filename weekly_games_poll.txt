@@ -7,3 +7,6 @@ choice_e: :killerqueen: killer queen black
 choice_f: :sea_of_thieves: sea of thieves
 choice_g: :rocket_league: rocket league
 choice_h: :halo: halo infinite
+choice_i: :pokemon: Pokemon Unite
+choice_j: :pouting_cat: Garfield Kart
+choice_k: :fist: Super Smash Bros Ultimate
