@@ -79,6 +79,13 @@ async def respond_to(client, message):
         [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wanb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["w4nbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wanbutt", "https://giphy.com/gifs/mad-you-u-Q8t3Mfn7TX7gD6l35d"],
+        ["wanbort", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["w*nbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wanb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["w*nb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
     ]
 
     for reaction in reactions:
