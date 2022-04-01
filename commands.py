@@ -3,6 +3,7 @@ from discord.ext.commands import MemberConverter
 from datetime import *
 import random
 from dick import *
+from sing import *
 from giphy import *
 import re
 from get_error_message import (
@@ -562,3 +563,8 @@ async def thomas(ctx):
 async def jane(ctx):
     jane = get_random_quote('jane').replace('\n', '\n> ')
     await ctx.send(f"> {jane} ")
+
+@bot.command()
+async def rick(ctx):
+    song = sing_to_me()
+    await ctx.send(song)

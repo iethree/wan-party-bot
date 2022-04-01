@@ -6,3 +6,12 @@
 ## Forthcoming Features
 
 - ability to update crontab
+
+## Running locally
+
+```zsh
+python3 -m venv env
+source env/bin/activate
+pip3 install -r requirements.txt
+DISCORD_TOKEN=TOKEN_HERE python3 -m main.py
+```

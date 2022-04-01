@@ -6,6 +6,8 @@ import message_handler as mh
 import subprocess as sub
 from commands import bot
 from tables import initiate_tables
+from datetime import date
+from sing import *
 
 initiate_tables()
 
@@ -27,12 +29,17 @@ async def on_message(message):
 
     print(message.author.display_name + ": " + message.content)
 
+    today = date.today().strftime("%m-%d")
+
+    if (today == "04-01"):
+        await message.channel.send(sing_to_me())
+        return
+
     await bot.process_commands(message)
 
     response = await mh.respond_to(bot, message)
 
     if response:
         await message.channel.send(response)
-
 
 bot.run(os.getenv("DISCORD_TOKEN"))
