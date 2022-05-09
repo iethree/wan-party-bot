@@ -86,6 +86,10 @@ async def respond_to(client, message):
         ["w*nbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["w*nb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wangboy", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wannbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wannbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ["wanbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
     ]
 
     for reaction in reactions:
