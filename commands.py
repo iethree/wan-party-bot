@@ -581,7 +581,7 @@ async def rick(ctx):
 async def quote(ctx):
     msg = ctx.message
     try:
-        quoted_msg = await ctx.channel.fetch_mesage(ctx.message.reference.message_id)
+        quoted_msg = await ctx.fetch_mesage(ctx.message.reference.message_id)
     except Exception as e:
         await ctx.send(e)
         return
