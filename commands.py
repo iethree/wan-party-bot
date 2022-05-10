@@ -620,6 +620,7 @@ async def sayquote(ctx):
 
 @bot.command()
 async def quotedump(ctx):
+    msg = "suck it Tim"
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
