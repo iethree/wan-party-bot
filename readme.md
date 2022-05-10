@@ -1,4 +1,5 @@
 # Wan Party Discord Bot
+You have chosen, or been chosen, to relocate to one of our finest remaining codebases. I thought so much of Wan Party Bot that I elected to establish my Administration here, in this repo so thoughtfully provided by Our Benefactors. I have been proud to call Wan Party Bot my home. And so, whether you are here to stay, or passing through on your way to parts unknown, welcome to Wan Party Bot. It's safer here. 
 
 - just for fun Discord bot to do fun things just for fun
 - anything pushed to `master` gets deployed

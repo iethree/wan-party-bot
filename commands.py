@@ -22,7 +22,7 @@ INSTRUCTIONS = {
     "-": (lambda x, y: x - y),
     "*": (lambda x, y: x * y),
     "/": (lambda x, y: x / y),
-    "^": (lambda x, y: x ** y),
+    "^": (lambda x, y: x**y),
     "‽": (lambda x, y: 42),
 }
 
@@ -534,37 +534,85 @@ def beg_mercy(user_id):
     conn.commit()
     conn.close()
 
+
 @bot.command()
 async def game_poll(ctx):
-    poll_text = open('./weekly_games_poll.txt', encoding='utf8').read()
+    poll_text = open("./weekly_games_poll.txt", encoding="utf8").read()
     await ctx.send(poll_text)
+
 
 @bot.command()
 async def dick(ctx):
-    dick = get_random_quote('dick').replace('\n', '\n> ')
+    dick = get_random_quote("dick").replace("\n", "\n> ")
     await ctx.send(f"> {dick} ")
+
 
 @bot.command()
 async def dickens(ctx):
-    dickens = get_random_quote('dickens').replace('\n', '\n> ')
+    dickens = get_random_quote("dickens").replace("\n", "\n> ")
     await ctx.send(f"> {dickens} ")
+
 
 @bot.command()
 async def willy(ctx):
-    willy = get_random_quote('willy').replace('\n', '\n> ')
+    willy = get_random_quote("willy").replace("\n", "\n> ")
     await ctx.send(f"> {willy} ")
+
 
 @bot.command()
 async def thomas(ctx):
-    thomas = get_random_quote('thomas').replace('\n', '\n> ')
+    thomas = get_random_quote("thomas").replace("\n", "\n> ")
     await ctx.send(f"> {thomas} ")
+
 
 @bot.command()
 async def jane(ctx):
-    jane = get_random_quote('jane').replace('\n', '\n> ')
+    jane = get_random_quote("jane").replace("\n", "\n> ")
     await ctx.send(f"> {jane} ")
+
 
 @bot.command()
 async def rick(ctx):
     song = sing_to_me()
     await ctx.send(song)
+
+
+@bot.command()
+async def quote(ctx):
+    msg = ctx.message
+    try:
+        quoted_msg = await ctx.channel.fetch_mesage(ctx.message.reference.message_id)
+    except Exception as e:
+        await ctx.send("You have to respond to the thing you want to quote and then call me")
+        return
+
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "INSERT INTO quotes(user_id, quote) VALUES(?,?)",
+            (quoted_msg.user_id, quoted_msg.content),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        await ctx.send(e)
+        return
+
+    await ctx.message.add_reaction("✅")
+
+
+@bot.command()
+async def sayquote(ctx):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        q = cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        await ctx.send(e)
+        return
+
+    ctx.send(f"{q.quote} --<@{q.user_id}>")
