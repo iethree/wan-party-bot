@@ -598,6 +598,7 @@ async def quote(ctx):
         conn.close()
     except Exception as e:
         await ctx.send(e)
+        await ctx.message.add_reaction("❌")
         return
 
     await ctx.message.add_reaction("✅")
@@ -616,3 +617,17 @@ async def sayquote(ctx):
         return
 
     await ctx.send(f"{q[1]} --<@{q[0]}>")
+
+@bot.command()
+async def quotedump(ctx):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        qs = cursor.execute("SELECT * FROM quotes ORDER BY user_id").fetchall()
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        await ctx.send(e)
+        return
+
+    await ctx.send([q.join("\t") for q in qs].join("\n\n"))
