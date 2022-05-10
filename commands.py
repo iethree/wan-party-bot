@@ -581,9 +581,9 @@ async def rick(ctx):
 async def quote(ctx):
     msg = ctx.message
     try:
-        quoted_msg = await ctx.fetch_mesage(ctx.message.reference.message_id)
+        quoted_msg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
     except Exception as e:
-        await ctx.send(e)
+        await ctx.send("you probably didn't quote something, or the dev was too lazy to handle the error right")
         return
 
     conn = sqlite3.connect(DATABASE)
@@ -592,7 +592,7 @@ async def quote(ctx):
     try:
         cursor.execute(
             "INSERT INTO quotes(user_id, quote) VALUES(?,?)",
-            (quoted_msg.user_id, quoted_msg.content),
+            (quoted_msg.author.id, quoted_msg.content),
         )
         conn.commit()
         conn.close()
@@ -608,11 +608,11 @@ async def sayquote(ctx):
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        q = cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1")
+        q = cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1").fetchone()
         conn.commit()
         conn.close()
     except Exception as e:
         await ctx.send(e)
         return
 
-    ctx.send(f"{q.quote} --<@{q.user_id}>")
+    await ctx.send(f"{q[1]} --<@{q[0]}>")

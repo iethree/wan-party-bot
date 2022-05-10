@@ -11,7 +11,6 @@ from sing import *
 
 initiate_tables()
 
-
 @bot.event
 async def on_ready():
     print("we have logged in as {0.user}".format(bot))
