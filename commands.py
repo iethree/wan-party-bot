@@ -583,7 +583,7 @@ async def quote(ctx):
     try:
         quoted_msg = await ctx.channel.fetch_mesage(ctx.message.reference.message_id)
     except Exception as e:
-        await ctx.send("You have to respond to the thing you want to quote and then call me")
+        await ctx.send(e)
         return
 
     conn = sqlite3.connect(DATABASE)
