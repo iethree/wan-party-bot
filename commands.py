@@ -627,7 +627,7 @@ async def quotedump(ctx):
         qs = cursor.execute("SELECT * FROM quotes ORDER BY user_id").fetchall()
         conn.commit()
         conn.close()
-        msg = [f"{q[0]}\t{q[1]" for q in qs].join("\n\n")
+        msg = [f"{q[0]}\t{q[1]}" for q in qs].join("\n\n")
     except Exception as e:
         await ctx.send(e)
         return
