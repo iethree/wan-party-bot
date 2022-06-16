@@ -599,6 +599,7 @@ async def quote(ctx):
         conn.close()
     except Exception as e:
         await ctx.send(e)
+        await ctx.message.add_reaction("❌")
         return
 
     await ctx.message.add_reaction("✅")
@@ -617,7 +618,6 @@ async def sayquote(ctx):
         return
 
     await ctx.send(f"{q[1]} --<@{q[0]}>")
-
 
 @bot.command()
 async def leaderboards(ctx):
@@ -655,3 +655,19 @@ async def leaderboards(ctx):
             result_message += f'{user} sent {total_messages} messages, average word count was {avg_word_count}\n'
 
         await ctx.send(result_message)
+
+@bot.command()
+async def quotedump(ctx):
+    msg = "suck it Tim"
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        qs = cursor.execute("SELECT * FROM quotes ORDER BY user_id").fetchall()
+        conn.commit()
+        conn.close()
+        msg = "\n".join([f"<@{q[0]}>\t{q[1]}" for q in qs])
+    except Exception as e:
+        await ctx.send(e)
+        return
+
+    await ctx.send(msg)
