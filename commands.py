@@ -12,6 +12,7 @@ from get_error_message import (
 import sqlite3
 import socket
 from markov_haiku_discord import gen_haiku
+import functools
 
 DATABASE = "wanparty.db"
 
@@ -616,3 +617,41 @@ async def sayquote(ctx):
         return
 
     await ctx.send(f"{q[1]} --<@{q[0]}>")
+
+
+@bot.command()
+async def leaderboards(ctx):
+    await ctx.send("Okay hold on...")
+    async with ctx.channel.typing():
+        channels = []
+        for guild in bot.guilds:
+            for channel in guild.text_channels:
+                channels.append(channel)
+
+        users = {}
+        for channel in channels:
+            messages = channel.history(limit=10000)
+            async for msg in messages:
+                name = msg.author.name
+                content = msg.content
+                word_count = len(msg.content.split(" "))
+                if name is None:
+                    continue
+
+                if name in users:
+                    users[name]["messages"].append(content)
+                    users[name]["word_count"].append(word_count)
+
+                else:
+                    users[name] = {
+                        "messages": [content],
+                        "word_count": [word_count],
+                    }
+
+        result_message = ""
+        for user, user_info in users.items():
+            total_messages = len(user_info["messages"])
+            avg_word_count = int(functools.reduce(lambda x, y: x + y, user_info["word_count"]) / total_messages)
+            result_message += f'{user} sent {total_messages} messages, average word count was {avg_word_count}\n'
+
+        await ctx.send(result_message)
