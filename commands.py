@@ -626,26 +626,26 @@ async def sayquote(ctx):
 async def loading(ctx):
     await thinking(ctx, 10)
 
-@bot.command()
-async def leaderboards(ctx):
-    try:
-        async with ctx.channel.typing():
-            responses = await get_leaderboards(ctx)
+# @bot.command()
+# async def leaderboards(ctx):
+#     try:
+#         async with ctx.channel.typing():
+#             responses = await get_leaderboards(ctx)
 
-            if len("\n".join(responses)) > 2000:
-                result = ""
-                for response in responses:
-                    if len(result) + len(response) <= 2000:
-                        result += f'{response}\n'
-                    else:
-                        await ctx.send(result)
-                        time.sleep(1)
-                        result = ""
-            else:
-                await ctx.send("\n".join(responses))
-    except Exception as e:
-        print(e)
-        await ctx.send('oops, something went wrong :blush:')
+#             if len("\n".join(responses)) > 2000:
+#                 result = ""
+#                 for response in responses:
+#                     if len(result) + len(response) <= 2000:
+#                         result += f'{response}\n'
+#                     else:
+#                         await ctx.send(result)
+#                         time.sleep(1)
+#                         result = ""
+#             else:
+#                 await ctx.send("\n".join(responses))
+#     except Exception as e:
+#         print(e)
+#         await ctx.send('oops, something went wrong :blush:')
 
 @bot.command()
 async def quotedump(ctx):
