@@ -1,7 +1,7 @@
 from discord.utils import get
 import random
 from reaction import *
-from jokes import random_joke
+from jokes import random_joke, hit_the_deck
 import subprocess as sub
 import io
 import sys
@@ -93,6 +93,7 @@ async def respond_to(client, message):
         ["wannbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wannbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        ['deck', hit_the_deck()],
     ]
 
     for reaction in reactions:
