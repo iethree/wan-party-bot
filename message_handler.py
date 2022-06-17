@@ -20,6 +20,9 @@ STATIC_REACTIONS = [
     MatchingReaction(
         lambda c, m: sometimes(0.02) and "shplay" in m.author.display_name.lower(), "🙄"
     ),
+    MatchingReaction(
+        lambda c, m: sometimes(0.02) and "ben" in m.author.display_name.lower(), "❤️"
+    ),
 ]
 
 
