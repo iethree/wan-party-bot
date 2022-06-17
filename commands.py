@@ -623,11 +623,6 @@ async def sayquote(ctx):
 async def leaderboards(ctx):
     await ctx.send("Okay hold on...")
     async with ctx.channel.typing():
-        channels = []
-        for guild in bot.guilds:
-            for channel in guild.text_channels:
-                channels.append(channel)
-
         users = {}
         messages = ctx.channel.history(limit=10000)
         async for msg in messages:
@@ -646,11 +641,11 @@ async def leaderboards(ctx):
                     "word_count": word_count,
                 }
 
-        responses = [f'Message stats for {channel.name}']
+        responses = [f'**Message stats for "{ctx.channel.name}"**']
         for user, user_info in users.items():
             message_count = user_info["message_count"]
             avg_word_count = int(user_info["word_count"] / message_count)
-            responses.append(f'{user}: {message_count} messages, avg length: {avg_word_count} words')
+            responses.append(f'*{user}*: **{message_count}** messages, avg length: **{avg_word_count}** words')
 
         if len("\n".join(responses)) > 2000:
             result = ""
