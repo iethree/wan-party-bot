@@ -1,4 +1,5 @@
 import math
+import random
 
 from lexical_constants import *
 
@@ -41,23 +42,27 @@ def score_profanity(user):
 
 
 def calculate_grade(vocabulary_score, syntax_score, language_score, idiom_score, expression_score, reference_score, culture_score, education_score, nomenclature_score, profanity_score):
-  composite_score = math.fsum([
-    vocabulary_score,
-    syntax_score,
-    language_score,
-    idiom_score,
-    expression_score,
-    reference_score,
-    culture_score,
-    education_score,
-    nomenclature_score,
-    profanity_score
-  ]) / 8
+  try:
+    composite_score = math.fsum([
+      vocabulary_score,
+      syntax_score,
+      language_score,
+      idiom_score,
+      expression_score,
+      reference_score,
+      culture_score,
+      education_score,
+      nomenclature_score,
+      profanity_score
+    ]) / 8
 
-  if (nomenclature_score > NOMENCLATURE_CONDITIONAL_LIMIT):
-    return GRADE_LEVELS[NOMENCLATURE_ADJUSTMENT]
+    if (nomenclature_score > NOMENCLATURE_CONDITIONAL_LIMIT):
+      return GRADE_LEVELS[NOMENCLATURE_ADJUSTMENT]
 
-  return GRADE_LEVELS[int(composite_score % len(GRADE_LEVELS))] or GRADE_LEVELS[0]
+    return GRADE_LEVELS[int(composite_score % len(GRADE_LEVELS))] or GRADE_LEVELS[0]
+  except Exception as e:
+    print(e)
+    return random.choice(GRADE_LEVELS)
 
 def lexical_analysis(user):
   vocabulary_score = score_vocab(user)
