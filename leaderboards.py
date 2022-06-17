@@ -2,6 +2,7 @@ import asyncio
 import time
 
 from thinking import thinking
+from lexical_analysis import lexical_analysis
 
 async def get_leaderboards(ctx):
   thinking_task = asyncio.create_task(thinking(ctx))
@@ -45,11 +46,13 @@ async def fetch_leaderboards(ctx):
   responses = [f'**Message stats for "{channel_name}"**']
   sorted_users = await sort_leaderboards(users)
 
+  print('analyzing chat data')
   for user_info in sorted_users:
       message_count = user_info["message_count"]
       avg_word_count = int(user_info["word_count"] / message_count)
       name = user_info["name"]
-      responses.append(f'> *{name}*: **{message_count}** messages, avg length: **{avg_word_count}** words')
+      grade = lexical_analysis(user_info)
+      responses.append(f'> *{name}*: **{message_count}** messages, avg length: **{avg_word_count}** words, :brain: estimate: **{grade}**')
 
   return responses
 
