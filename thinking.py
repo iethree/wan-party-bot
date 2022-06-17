@@ -134,9 +134,9 @@ thinking_messages = [
   "Disrupting warp fields with an inverse graviton burst..."
 ]
 
-async def thinking(ctx, seconds = 60, duration = 2):
+async def thinking(ctx, max_seconds = 120, duration = 2):
   msg = await ctx.send('let me think...')
-  for i in range(round(seconds / duration)):
+  for i in range(round(max_seconds / duration)):
     try:
       newMsg = random.choice(thinking_messages)
       await asyncio.sleep(duration)
