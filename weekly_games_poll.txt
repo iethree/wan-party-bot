@@ -5,3 +5,4 @@ choice_c: :fallguys: Fall Guys
 choice_d: :pouting_cat: Garfield Kart
 choice_e: :parachute: Helldivers
 choice_f: :stuck_out_tongue_winking_eye: Borderlands 3
+choice_g: :cyclone: The Cycle
