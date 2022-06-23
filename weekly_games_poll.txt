@@ -1,10 +1,7 @@
 /poll question: What to play on Sunday?
 choice_a: :fortnite: fortnite
 choice_b: :splitgate: splitgate
-choice_c: :overwatch: overwatch
-choice_d: :dwarf: deep rock galactic
-choice_e: :pouting_cat: Garfield Kart
-choice_f: :cloud_rain: Risk of Rain 2
-choice_g: :parachute: Helldivers
-choice_h: :stuck_out_tongue_winking_eye: Borderlands 3
-
+choice_c: :fallguys: Fall Guys
+choice_d: :pouting_cat: Garfield Kart
+choice_e: :parachute: Helldivers
+choice_f: :stuck_out_tongue_winking_eye: Borderlands 3
