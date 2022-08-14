@@ -1,8 +1,9 @@
 /poll question: What to play on Sunday?
 choice_a: :fortnite: fortnite
-choice_b: :splitgate: splitgate
+choice_b: :splitgate: Splitgate
 choice_c: :fallguys: Fall Guys
-choice_d: :pouting_cat: Garfield Kart
+choice_d: :red_circle: Rounds
 choice_e: :parachute: Helldivers
 choice_f: :stuck_out_tongue_winking_eye: Borderlands 3
-choice_g: :cyclone: The Cycle
+choice_g: :sea_of_thieves: Sea of Thieves
+choice_h: :rocket_league: Rocket League
