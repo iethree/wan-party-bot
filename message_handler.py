@@ -94,6 +94,7 @@ async def respond_to(client, message):
         ["wannbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ['deck', hit_the_deck()],
+        ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
 
     for reaction in reactions:
