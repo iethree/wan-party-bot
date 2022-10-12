@@ -2,7 +2,7 @@ from discord.utils import get
 import random
 from reaction import *
 from jokes import random_joke, hit_the_deck
-from dick import get_random_quote
+from dick import get_yoda_quote
 import subprocess as sub
 import io
 import sys
@@ -80,7 +80,7 @@ async def respond_to(client, message):
 
     responses = [
         ["joke", random_joke()],
-        ["yoda", get_random_quote('yoda')],
+        ["yoda", get_yoda_quote()],
         [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],

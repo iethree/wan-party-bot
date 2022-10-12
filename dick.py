@@ -13,8 +13,12 @@ dudes = {
   "dickens": dickenses,
   "willy": willies,
   "thomas": summas,
-  "jane": janes
+  "jane": janes,
+  "yoda": yoda
 }
+
+def get_yoda_quote():
+  return '> ' + random.choice(yoda)
 
 def get_random_quote(name):
   choice = ''
