@@ -1,6 +1,6 @@
 /poll question: What to play on Sunday?
 choice_a: :fortnite: Fortnite
-choice_b: :overwatch: Overwatch 1
+choice_b: :overwatch: Overwatch 2
 choice_c: :dwarf: Deep Rock Galactic
 choice_d: :rocket_league: Rocket League
 choice_e: :gun: Gunfire Reborn
