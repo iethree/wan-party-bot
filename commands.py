@@ -693,19 +693,22 @@ async def quotedump(ctx):
 
     await ctx.send(msg)
 
-@tasks.loop(hours=24)
-async def periodically_sayquote():
-    channel = get_channel_by_name('general')
-    if channel is not None:
-        try:
-            await channel.send(get_random_quote())
-        except Exception as e:
-            await ctx.send(e)
-    else:
-        await ctx.send(f'#general not found')
+if False:
+    @tasks.loop(hours=24)
+    async def periodically_sayquote():
+        channel = get_channel_by_name('general')
+        if channel is not None:
+            try:
+                await channel.send(get_random_quote())
+            except Exception as e:
+                await ctx.send(e)
+        else:
+            await ctx.send(f'#general not found')
 
-@periodically_sayquote.before_loop
-async def before_periodically_sayquote(self):
-    print('waiting...')
-    await bot.wait_until_ready()
+    @periodically_sayquote.before_loop
+    async def before_periodically_sayquote(self):
+        print('waiting...')
+        await bot.wait_until_ready()
+
+    periodically_sayquote.start()
 
