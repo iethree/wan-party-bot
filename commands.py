@@ -1,4 +1,4 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import MemberConverter
 from datetime import *
 import random
@@ -9,6 +9,7 @@ from thinking import thinking
 from leaderboards import get_leaderboards
 
 import re
+import asyncio
 from get_error_message import (
     get_error_message_for_fun_times_everyone_loves_error_messages,
 )
@@ -193,11 +194,37 @@ async def rollin(ctx):
 
 
 @bot.command()
+async def list_channels_by_name(ctx):
+    await ctx.send('\n'.join(bot.get_all_channels()))
+
+
+@bot.command()
+async def help(ctx, command_name):
+    for cmd in bot.commands:
+        if cmd.name == command_name:
+            await ctx.send(cmd.help)
+            break
+    else:
+        await ctx.send(f'''
+          {command_name} not found in
+          {','.join(cmd.name for cmd in bot.commands)}
+        ''')
+
+
+
+def get_channel_by_name(name):
+    for channel in bot.get_all_channels():
+        if channel.name == name:
+            return channel
+
+
+@bot.command()
 async def puppet(ctx, channel_name, msg):
-    channels = bot.get_all_channels()
-    for channel in channels:
-        if channel.name == channel_name:
-            await channel.send(msg)
+    channel = get_channel_by_name(channel_name)
+    if channel is not None:
+        await channel.send(msg)
+    else:
+        await ctx.send(f'{channel_name} not found')
 
 
 def nice_dice(dice):
@@ -607,20 +634,22 @@ async def quote(ctx):
 
     await ctx.message.add_reaction("✅")
 
+async def get_random_quote():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    q = cursor.execute(
+        "SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1"
+    ).fetchone()
+    conn.commit()
+    conn.close()
+    return f"{q[1]} --<@{q[0]}>"
 
 @bot.command()
 async def sayquote(ctx):
     try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        q = cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1").fetchone()
-        conn.commit()
-        conn.close()
+        await ctx.send(get_random_quote())
     except Exception as e:
         await ctx.send(e)
-        return
-
-    await ctx.send(f"{q[1]} --<@{q[0]}>")
 
 @bot.command()
 async def loading(ctx):
@@ -647,6 +676,7 @@ async def leaderboards(ctx):
         print(e)
         await ctx.send('oops, something went wrong :blush:')
 
+
 @bot.command()
 async def quotedump(ctx):
     msg = "suck it Tim"
@@ -662,3 +692,20 @@ async def quotedump(ctx):
         return
 
     await ctx.send(msg)
+
+@tasks.loop(hours=24)
+async def periodically_sayquote():
+    channel = get_channel_by_name(channel_name)
+    if channel is not None:
+        try:
+            await channel.send(get_random_quote())
+        except Exception as e:
+            await ctx.send(e)
+    else:
+        await ctx.send(f'{channel_name} not found')
+
+@periodically_sayquote.before_loop
+async def before_periodically_sayquote(self):
+    print('waiting...')
+    await bot.wait_until_ready()
+
