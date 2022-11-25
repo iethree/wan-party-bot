@@ -6,6 +6,6 @@ choice_d: :white_circle: Core Keeper
 choice_e: :gun: Gunfire Reborn
 choice_f: :red_circle: Rounds
 choice_g: :rat: Warhammer Vermintide 2 
-choice_h: :stuck_out_tongue_winking_eye: Borderlands 3
-choice_i: :european_castle: Age of Empires 2
-choice_j: :star: Starcraft 2
+choice_h: :bow_and_arrow: Valheim
+choice_i: :grumpy_cat: Garfield Kart
+choice_j: :elite: Elite Dangerous
