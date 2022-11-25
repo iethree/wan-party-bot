@@ -7,5 +7,5 @@ choice_e: :gun: Gunfire Reborn
 choice_f: :red_circle: Rounds
 choice_g: :rat: Warhammer Vermintide 2 
 choice_h: :bow_and_arrow: Valheim
-choice_i: :grumpy_cat: Garfield Kart
+choice_i: :joy_cat: Garfield Kart
 choice_j: :elite: Elite Dangerous
