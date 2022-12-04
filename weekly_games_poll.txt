@@ -9,3 +9,4 @@ choice_g: :rat: Warhammer Vermintide 2
 choice_h: :bow_and_arrow: Valheim
 choice_i: :joy_cat: Garfield Kart
 choice_j: :elite: Elite Dangerous
+choice_k: :stormtrooper: Star Wars Squadrons 
