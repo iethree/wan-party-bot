@@ -627,7 +627,7 @@ async def quotestats(ctx):
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        q = cursor.execute("SELECT user_id, COUNT(*) AS count FROM quotes GROUP BY user_id ORDER BY count").fetchall()
+        q = cursor.execute("SELECT user_id, COUNT(*) AS count FROM quotes GROUP BY user_id ORDER BY count DESC").fetchall()
         conn.commit()
         conn.close()
     except Exception as e:
@@ -635,7 +635,7 @@ async def quotestats(ctx):
         return
     result = ""
     for row in q:
-        result += f"<@{q[0]}> has been quoted {str(row[1])} times\n"
+        result += f"<@{row[0]}> has been quoted {str(row[1])} times\n"
     await ctx.send(result)
 
 
