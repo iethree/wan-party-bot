@@ -623,6 +623,23 @@ async def sayquote(ctx):
     await ctx.send(f"{q[1]} --<@{q[0]}>")
 
 @bot.command()
+async def quotestats(ctx):
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        q = cursor.execute("SELECT user_id, COUNT(user_id) AS count FROM quotes GROUP_BY user_id ORDER BY count").fetchall()
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        await ctx.send(e)
+        return
+    result = ""
+    for row in q:
+        result += f"<@{q[0]}> has been quoted {str(row[1])} times\n"
+    await ctx.send(result)
+
+
+@bot.command()
 async def loading(ctx):
     await thinking(ctx, 10)
 
