@@ -627,7 +627,7 @@ async def quotestats(ctx):
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        q = cursor.execute("SELECT user_id, COUNT(user_id) AS count FROM quotes GROUP_BY user_id ORDER BY count").fetchall()
+        q = cursor.execute("SELECT user_id, COUNT(*) AS count FROM quotes GROUP BY user_id ORDER BY count").fetchall()
         conn.commit()
         conn.close()
     except Exception as e:
