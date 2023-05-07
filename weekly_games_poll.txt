@@ -9,5 +9,6 @@ choice_g: :stormtrooper: Star Wars Squadrons
 choice_h: :halo2: Halo 2
 choice_i: :rocket: Destiny 2
 choice_j: :fire: Torchlight Infinite
-choice_k: :fist: Brawlhalla
-choice_l: :mountain: Apex Legends
+choice_k: :splitgate: Splitgate
+choice_l: :knife: Deceive Inc
+choice_m: :fist: Super Smash Bros Ultimate
