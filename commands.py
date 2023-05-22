@@ -577,7 +577,7 @@ async def jane(ctx):
 @bot.command()
 async def v(ctx):
     dwarf = get_dwarf_quote()
-    await ctx.send(f"> {dwarf} ")
+    await ctx.send(dwarf)
 
 @bot.command()
 async def rick(ctx):
