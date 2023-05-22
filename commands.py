@@ -574,6 +574,10 @@ async def jane(ctx):
     jane = get_random_quote("jane").replace("\n", "\n> ")
     await ctx.send(f"> {jane} ")
 
+@bot.command()
+async def dwarf(ctx):
+    dwarf = get_dwarf_quote("dwarf").replace("\n", "\n> ")
+    await ctx.send(f"> {dwarf} ")
 
 @bot.command()
 async def rick(ctx):

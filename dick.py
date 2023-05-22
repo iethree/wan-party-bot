@@ -6,6 +6,7 @@ willies = open('./data/willy.txt', encoding='utf8').read().split('\n\n')
 summas = open('./data/summa.txt', encoding='utf8').read().split('\n\n')
 janes = open('./data/jane.txt', encoding='utf8').read().split('\n\n')
 yoda = open('./data/clone-wars-quotes.txt', encoding='utf8').read().split('\n')
+dwarfs = open('./data/dwarfs.txt', encoding='utf8').read().split('\n')
 
 
 dudes = {
@@ -14,11 +15,15 @@ dudes = {
   "willy": willies,
   "thomas": summas,
   "jane": janes,
-  "yoda": yoda
+  "yoda": yoda,
+  "dwarf": dwarfs,
 }
 
 def get_yoda_quote():
   return '> ' + random.choice(yoda)
+
+def get_dwarf_quote():
+  return '> ' + random.choice(dwarfs)
 
 def get_random_quote(name):
   choice = ''
