@@ -575,7 +575,7 @@ async def jane(ctx):
     await ctx.send(f"> {jane} ")
 
 @bot.command()
-async def dwarf(ctx):
+async def v(ctx):
     dwarf = get_dwarf_quote("dwarf").replace("\n", "\n> ")
     await ctx.send(f"> {dwarf} ")
 
