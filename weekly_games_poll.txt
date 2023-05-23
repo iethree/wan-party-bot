@@ -1,14 +1,7 @@
 /poll question: What to play on Sunday?
-choice_a: :fortnite: Fortnite
-choice_b: :overwatch: Overwatch 2
-choice_c: :dwarf: Deep Rock Galactic
-choice_d: :white_circle: Core Keeper
-choice_e: :gun: Gunfire Reborn
-choice_f: :joy_cat: Garfield Kart
-choice_g: :stormtrooper: Star Wars Squadrons 
-choice_h: :halo2: Halo 2
-choice_i: :rocket: Destiny 2
-choice_j: :fire: Torchlight Infinite
-choice_k: :splitgate: Splitgate
-choice_l: :knife: Deceive Inc
-choice_m: :fist: Super Smash Bros Ultimate
+choice_a: :dwarf: Deep Rock Galactic
+choice_b: :white_circle: Core Keeper
+choice_c: :gun: CS:GO
+choice_d: :beetle: Starship Troopers: Extermination
+choice_e: :parachute: Helldivers
+choice_f: :knife: Deceive, Inc
