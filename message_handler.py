@@ -1,7 +1,7 @@
 from discord.utils import get
 import random
 from reaction import *
-from jokes import random_joke, hit_the_deck
+from jokes import random_joke, hit_the_deck, hit_the_donk
 from dick import get_yoda_quote
 import subprocess as sub
 import io
@@ -96,6 +96,7 @@ async def respond_to(client, message):
         ["wannbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ["wanbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ['deck', hit_the_deck()],
+        ['donk', hit_the_donk()],
         ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
 

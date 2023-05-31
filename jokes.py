@@ -17,3 +17,10 @@ decks = [
 
 def hit_the_deck():
     return 'Did someone say DECK??\n' + random.choice(decks)
+
+donks = [
+    'https://i.imgur.com/4OmIo0j.png',
+]
+
+def hit_the_donk():
+    return 'Did someone say DONK??\n' + random.choice(donks)
