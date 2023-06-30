@@ -4,4 +4,5 @@ choice_b: :white_circle: Core Keeper
 choice_c: :gun: CS:GO
 choice_d: :beetle: Starship Troopers: Extermination
 choice_e: :parachute: Helldivers
-choice_f: :knife: Deceive, Inc
+choice_f: :military_helmet: BattleBit Remastered
+choice_g: :fortnite: Fortnite
