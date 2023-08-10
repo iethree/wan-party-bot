@@ -64,7 +64,7 @@ async def respond_to(client, message):
         async for m in message.channel.history(limit=64):
             if m.id == message.id:
                 continue
-            if "void" not in m.author.name.lower():
+            if "vοid" not in m.author.name.lower():
                 continue
             return m.content
         return "hmmm"
