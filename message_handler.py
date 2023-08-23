@@ -97,7 +97,7 @@ async def respond_to(client, message):
             await reaction.apply_to(message)
 
     for (trigger, response) in responses:
-        re_matches = isinstance(trigger, re.Pattern) and trigger.match(content)
+        re_matches = isinstance(trigger, re.Pattern) and trigger.search(content)
         str_matches = isinstance(trigger, str) and trigger in content
         if re_matches or str_matches:
             await message.channel.send(response)
