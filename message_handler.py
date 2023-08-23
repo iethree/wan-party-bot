@@ -1,12 +1,15 @@
-from discord.utils import get
-import random
-from reaction import *
-from jokes import random_joke, hit_the_deck, hit_the_donk
-from dick import get_yoda_quote
-import subprocess as sub
-import io
-import sys
 import contextlib
+from discord.utils import get
+import io
+import random
+import re
+import subprocess as sub
+import sys
+
+from dick import get_yoda_quote
+from jokes import random_joke, hit_the_deck, hit_the_donk
+from reaction import *
+
 
 
 def sometimes(chance):
@@ -82,28 +85,19 @@ async def respond_to(client, message):
         ["joke", random_joke()],
         ["yoda", get_yoda_quote()],
         [" bot ", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["w4nb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanb0t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["w4nbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanbutt", "https://giphy.com/gifs/mad-you-u-Q8t3Mfn7TX7gD6l35d"],
-        ["wanbort", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["w*nbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["w*nb*t", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wangboy", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wannbot", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wannbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ["wanbott", "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        ['deck', hit_the_deck()],
-        ['donk', hit_the_donk()],
+        [re.compile(r"w[\w*]{0,3}n.{0,2}b[\w*]{0,3}[ty]"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        [re.compile(r"d\w*ck"), hit_the_deck()],
+        [re.compile(r"d\w*nk"), hit_the_donk()],
         ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
+        ['slide', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
 
     for reaction in reactions:
         if reaction.matches(content, message):
             await reaction.apply_to(message)
 
-    for response in responses:
-        if response[0] in content:
-            await message.channel.send(response[1])
+    for (trigger, response) in responses:
+        re_matches = isinstance(trigger, re.Pattern) and trigger.match(content)
+        str_matches = isinstance(trigger, str) and trigger in content
+        if re_matches or str_matches:
+            await message.channel.send(response)
