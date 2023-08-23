@@ -20,6 +20,7 @@ def hit_the_deck():
 
 donks = [
     'https://i.imgur.com/4OmIo0j.png',
+    'https://i.imgur.com/4V97LRB.png',
 ]
 
 def hit_the_donk():
