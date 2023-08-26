@@ -1,8 +1,6 @@
 /poll question: What to play on Sunday?
 choice_a: :dwarf: Deep Rock Galactic
-choice_b: :white_circle: Core Keeper
-choice_c: :gun: CS:GO
-choice_d: :beetle: Starship Troopers: Extermination
-choice_e: :parachute: Helldivers
-choice_f: :military_helmet: BattleBit Remastered
-choice_g: :fortnite: Fortnite
+choice_b: :gun: CS:GO
+choice_c: :military_helmet: BattleBit Remastered
+choice_d: :halo: Halo 2
+choice_e: :fallguys: Fall Guys
