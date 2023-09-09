@@ -3,4 +3,5 @@ choice_a: :dwarf: Deep Rock Galactic
 choice_b: :gun: CS:GO
 choice_c: :military_helmet: BattleBit Remastered
 choice_d: :halo: Halo 2
-choice_e: :fallguys: Fall Guys
+choice_e: :ghost: Phasmaphobia
+choice_f: :zombie: Project Zomboid
