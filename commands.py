@@ -726,15 +726,16 @@ async def mysterious_merchant(ctx):
                 return f"{get_article(res)} res"
             return res
 
-    words = FuckingWordTracker()
-    msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}.' \
-          f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:' \
-          f'- {words.get_descriptor()} {words.get_item()}' \
-          f'- {words.get_descriptor()} {words.get_item()}' \
-          f'- {words.get_descriptor()} {words.get_item()}' \
-          f'- {words.get_descriptor()} {words.get_item()}' \
-          f'- {words.get_descriptor()} {words.get_item()}'
     try:
+        words = FuckingWordTracker()
+        msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}.' \
+              f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:' \
+              f'- {words.get_descriptor()} {words.get_item()}' \
+              f'- {words.get_descriptor()} {words.get_item()}' \
+              f'- {words.get_descriptor()} {words.get_item()}' \
+              f'- {words.get_descriptor()} {words.get_item()}' \
+              f'- {words.get_descriptor()} {words.get_item()}'
+
         await ctx.send(msg)
     except Exception as e:
         await ctx.send(e)
