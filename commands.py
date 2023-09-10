@@ -706,35 +706,39 @@ async def mysterious_merchant(ctx):
             self.used = []
 
         def get_descriptor(self, article=False):
-            res = self.descriptors[random.randrange(len(self.descriptors) - 1)]
+            res = self.descriptors[random.randrange(len(self.descriptors) - 1)].rstrip()
             self.descriptors.remove(res)
             if article:
                 return f"{get_article(res)}"
-            return res.rstrip()
+            return res
 
         def get_item(self, article=False):
-            res = self.items[random.randrange(len(self.items) - 1)]
+            res = self.items[random.randrange(len(self.items) - 1)].rstrip()
             self.items.remove(res)
             if article:
                 return f"{get_article(res)}"
-            return res.rstrip()
+            return res
 
         def get_merchant(self, article=False):
-            res = self.merchants[random.randrange(len(self.merchants) - 1)]
+            res = self.merchants[random.randrange(len(self.merchants) - 1)].rstrip()
             self.merchants.remove(res)
             if article:
                 return f"{get_article(res)}"
-            return res.rstrip()
+            return res
+
+        def get_item_list(self, list_len=1):
+            item_no = 0
+            result = ""
+            while item_no <= list_len:
+                result += f"- {self.get_descriptor()} {self.get_item()}\n"
+            return result
 
     try:
         words = FuckingWordTracker()
-        msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}.' \
-              f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:\n' \
-              f'- {words.get_descriptor()} {words.get_item()}' \
-              f'- {words.get_descriptor()} {words.get_item()}' \
-              f'- {words.get_descriptor()} {words.get_item()}' \
-              f'- {words.get_descriptor()} {words.get_item()}' \
-              f'- {words.get_descriptor()} {words.get_item()}'
+        msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}. ' \
+              f'They stand too close to you. They offer you their paltry wares. ' \
+              f'Type /select <item> to choose an item: \n' \
+              f'{words.get_item_list(list_len=5)}'
 
         await ctx.send(msg)
     except Exception as e:
