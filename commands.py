@@ -684,41 +684,55 @@ async def quotedump(ctx):
 
     await ctx.send(msg)
 
-def get_article(word):
-    if word[0] in ['a', 'e', 'i', 'o', 'i']:
-        return "an"
-    return "a"
-
-
-def get_term(term_set, used):
-    found = False
-    while not found:
-        result = term_set[random.randrange(len(term_set) - 1)]
-        if result not in used:
-            used.append(result)
-            return result, used
-
 
 @bot.command()
 async def mysterious_merchant(ctx):
-    with open('./data/item_desc.txt') as d:
-        descriptors = d.readlines()
-    with open('./data/items.txt') as i:
-        items = i.readlines()
-    with open('./data/merchants.txt') as m:
-        merchants = m.readlines()
+    def get_article(word):
+        if word[0].downcase() in ["a", "e", "i", "o", "u"]:
+            return "an"
+        return "a"
 
-    used = []
+    class FuckingWordTracker:
+        def __init__(self):
+            with open('./data/item_desc.txt') as d:
+                descriptors = d.readlines()
+            with open('./data/items.txt') as i:
+                items = i.readlines()
+            with open('./data/merchants.txt') as m:
+                merchants = m.readlines()
+            self.merchants = merchants
+            self.items = items
+            self.descriptors = descriptors
+            self.used = []
 
-    merchant = get_term(merchants)
-    merchant_descriptor = get_term(descriptors)
+        def get_descriptor(self, article=False):
+            res = self.descriptors[random.randrange(len(self.descriptors) - 1)]
+            self.descriptors.remove(res)
+            if article:
+                return f"{get_article(res)} res"
+            return res
 
-    msg = f'Your tawdry little invocation summons {get_article(merchant_descriptor)} {merchant_descriptor} {merchant}. ' \
-          f'They edge a little too close to you and offer their wares.' \
-          f'Select from these options with /select <item>:\n' \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}"
+        def get_item(self, article=False):
+            res = self.items[random.randrange(len(self.items) - 1)]
+            self.items.remove(res)
+            if article:
+                return f"{get_article(res)} res"
+            return res
+
+        def get_merchant(self, article=False):
+            res = self.merchants[random.randrange(len(self.merchants) - 1)]
+            self.merchants.remove(res)
+            if article:
+                return f"{get_article(res)} res"
+            return res
+
+    words = FuckingWordTracker()
+    msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}.' \
+          f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:' \
+          f'- {words.get_descriptor()} {words.get_item()}' \
+          f'- {words.get_descriptor()} {words.get_item()}' \
+          f'- {words.get_descriptor()} {words.get_item()}' \
+          f'- {words.get_descriptor()} {words.get_item()}' \
+          f'- {words.get_descriptor()} {words.get_item()}'
     await ctx.send(msg)
+
