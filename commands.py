@@ -710,26 +710,26 @@ async def mysterious_merchant(ctx):
             self.descriptors.remove(res)
             if article:
                 return f"{get_article(res)} res"
-            return res
+            return res.rstrip()
 
         def get_item(self, article=False):
             res = self.items[random.randrange(len(self.items) - 1)]
             self.items.remove(res)
             if article:
                 return f"{get_article(res)} res"
-            return res
+            return res.rstrip()
 
         def get_merchant(self, article=False):
             res = self.merchants[random.randrange(len(self.merchants) - 1)]
             self.merchants.remove(res)
             if article:
                 return f"{get_article(res)} res"
-            return res
+            return res.rstrip()
 
     try:
         words = FuckingWordTracker()
         msg = f'Your tawdry little invocation summons {words.get_descriptor(True)} {words.get_merchant()}.' \
-              f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:' \
+              f'They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item:\n' \
               f'- {words.get_descriptor()} {words.get_item()}' \
               f'- {words.get_descriptor()} {words.get_item()}' \
               f'- {words.get_descriptor()} {words.get_item()}' \
