@@ -730,11 +730,10 @@ async def mysterious_merchant(ctx):
             return res
 
         def get_item_list(self, list_len=1):
-            item_no = 0
-            result = ""
-            while item_no <= list_len:
-                result += f"- {self.get_descriptor()} {self.get_item()}\n"
-            return result
+            result = []
+            while len(result) <= list_len:
+                result.append(f"- {self.get_descriptor()} {self.get_item()}\n")
+            return "".join(result)
 
     try:
         words = FuckingWordTracker()
