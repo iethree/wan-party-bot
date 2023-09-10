@@ -709,21 +709,21 @@ async def mysterious_merchant(ctx):
             res = self.descriptors[random.randrange(len(self.descriptors) - 1)]
             self.descriptors.remove(res)
             if article:
-                return f"{get_article(res)} res"
+                return f"{get_article(res)}"
             return res.rstrip()
 
         def get_item(self, article=False):
             res = self.items[random.randrange(len(self.items) - 1)]
             self.items.remove(res)
             if article:
-                return f"{get_article(res)} res"
+                return f"{get_article(res)}"
             return res.rstrip()
 
         def get_merchant(self, article=False):
             res = self.merchants[random.randrange(len(self.merchants) - 1)]
             self.merchants.remove(res)
             if article:
-                return f"{get_article(res)} res"
+                return f"{get_article(res)}"
             return res.rstrip()
 
     try:
