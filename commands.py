@@ -734,5 +734,8 @@ async def mysterious_merchant(ctx):
           f'- {words.get_descriptor()} {words.get_item()}' \
           f'- {words.get_descriptor()} {words.get_item()}' \
           f'- {words.get_descriptor()} {words.get_item()}'
-    await ctx.send(msg)
+    try:
+        await ctx.send(msg)
+    except Exception as e:
+        await ctx.send(e)
 
