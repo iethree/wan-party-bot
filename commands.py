@@ -696,13 +696,13 @@ async def mysterious_merchant(ctx):
         def __init__(self):
             with open('./data/item_desc.txt') as d:
                 desc_lines = d.readlines()
-                descriptors = list(map(lambda x: x.rstrip(), desc_lines))
+                descriptors = list(map(lambda x: x.rstrip('\n'), desc_lines))
             with open('./data/items.txt') as i:
                 item_lines = i.readlines()
-                items = list(map(lambda x: x.rstrip(), item_lines))
+                items = list(map(lambda x: x.rstrip('\n'), item_lines))
             with open('./data/merchants.txt') as m:
                 merchant_lines = m.readlines()
-                merchants = list(map(lambda x: x.rstrip(), merchant_lines))
+                merchants = list(map(lambda x: x.rstrip('\n'), merchant_lines))
             self.merchants = merchants
             self.items = items
             self.descriptors = descriptors
