@@ -746,3 +746,11 @@ async def mysterious_merchant(ctx):
     except Exception as e:
         await ctx.send(e)
 
+
+@bot.command()
+async def select(ctx, *args):
+    if len(args) == 0:
+        await ctx.send("You have to select something!")
+    msg = f"You have selected the {' '.join(args)}. You have been cursed by the {' '.join(args)}. You shouldn't have " \
+          f"bought it."
+    await ctx.send(msg)
