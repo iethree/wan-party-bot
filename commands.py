@@ -688,7 +688,7 @@ async def quotedump(ctx):
 @bot.command()
 async def mysterious_merchant(ctx):
     def get_article(word):
-        if word[0].downcase() in ["a", "e", "i", "o", "u"]:
+        if word[0].lower() in ["a", "e", "i", "o", "u"]:
             return "an"
         return "a"
 
