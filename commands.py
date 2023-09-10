@@ -684,41 +684,41 @@ async def quotedump(ctx):
 
     await ctx.send(msg)
 
-def get_article(word):
-    if word[0] in ['a', 'e', 'i', 'o', 'i']:
-        return "an"
-    return "a"
-
-
-def get_term(term_set, used):
-    found = False
-    while not found:
-        result = term_set[random.randrange(len(term_set) - 1)]
-        if result not in used:
-            used.append(result)
-            return result, used
-
-
-@bot.command()
-async def mysterious_merchant(ctx):
-    with open('./data/item_desc.txt') as d:
-        descriptors = d.readlines()
-    with open('./data/items.txt') as i:
-        items = i.readlines()
-    with open('./data/merchants.txt') as m:
-        merchants = m.readlines()
-
-    used = []
-
-    merchant = get_term(merchants)
-    merchant_descriptor = get_term(descriptors)
-
-    msg = f'Your tawdry little invocation summons {get_article(merchant_descriptor)} {merchant_descriptor} {merchant}. ' \
-          f'They edge a little too close to you and offer their wares.' \
-          f'Select from these options with /select <item>:\n' \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-          f"- {get_term(descriptors)} {get_term(items)}" \
-    await ctx.send(msg)
+# def get_article(word):
+#     if word[0] in ['a', 'e', 'i', 'o', 'i']:
+#         return "an"
+#     return "a"
+#
+#
+# def get_term(term_set, used):
+#     found = False
+#     while not found:
+#         result = term_set[random.randrange(len(term_set) - 1)]
+#         if result not in used:
+#             used.append(result)
+#             return result, used
+#
+#
+# @bot.command()
+# async def mysterious_merchant(ctx):
+#     with open('./data/item_desc.txt') as d:
+#         descriptors = d.readlines()
+#     with open('./data/items.txt') as i:
+#         items = i.readlines()
+#     with open('./data/merchants.txt') as m:
+#         merchants = m.readlines()
+#
+#     used = []
+#
+#     merchant = get_term(merchants)
+#     merchant_descriptor = get_term(descriptors)
+#
+#     msg = f'Your tawdry little invocation summons {get_article(merchant_descriptor)} {merchant_descriptor} {merchant}. ' \
+#           f'They edge a little too close to you and offer their wares.' \
+#           f'Select from these options with /select <item>:\n' \
+#           f"- {get_term(descriptors)} {get_term(items)}" \
+#           f"- {get_term(descriptors)} {get_term(items)}" \
+#           f"- {get_term(descriptors)} {get_term(items)}" \
+#           f"- {get_term(descriptors)} {get_term(items)}" \
+#           f"- {get_term(descriptors)} {get_term(items)}" \
+#     await ctx.send(msg)
