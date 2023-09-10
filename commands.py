@@ -695,32 +695,35 @@ async def mysterious_merchant(ctx):
     class FuckingWordTracker:
         def __init__(self):
             with open('./data/item_desc.txt') as d:
-                descriptors = d.readlines()
+                desc_lines = d.readlines()
+                descriptors = list(map(lambda x: x.rstrip(), desc_lines))
             with open('./data/items.txt') as i:
-                items = i.readlines()
+                item_lines = i.readlines()
+                items = list(map(lambda x: x.rstrip(), item_lines))
             with open('./data/merchants.txt') as m:
-                merchants = m.readlines()
+                merchant_lines = m.readlines()
+                merchants = list(map(lambda x: x.rstrip(), merchant_lines))
             self.merchants = merchants
             self.items = items
             self.descriptors = descriptors
             self.used = []
 
         def get_descriptor(self, article=False):
-            res = self.descriptors[random.randrange(len(self.descriptors) - 1)].rstrip()
+            res = self.descriptors[random.randrange(len(self.descriptors) - 1)]
             self.descriptors.remove(res)
             if article:
                 return f"{get_article(res)}"
             return res
 
         def get_item(self, article=False):
-            res = self.items[random.randrange(len(self.items) - 1)].rstrip()
+            res = self.items[random.randrange(len(self.items) - 1)]
             self.items.remove(res)
             if article:
                 return f"{get_article(res)}"
             return res
 
         def get_merchant(self, article=False):
-            res = self.merchants[random.randrange(len(self.merchants) - 1)].rstrip()
+            res = self.merchants[random.randrange(len(self.merchants) - 1)]
             self.merchants.remove(res)
             if article:
                 return f"{get_article(res)}"
