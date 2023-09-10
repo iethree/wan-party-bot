@@ -689,8 +689,8 @@ async def quotedump(ctx):
 async def mysterious_merchant(ctx):
     def get_article(word):
         if word[0].lower() in ["a", "e", "i", "o", "u"]:
-            return "an"
-        return "a"
+            return f"an {word}"
+        return f"a {word}"
 
     class FuckingWordTracker:
         def __init__(self):
