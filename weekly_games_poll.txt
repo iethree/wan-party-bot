@@ -1,7 +1,41 @@
+## Current Poll
+
 /poll question: What to play on Sunday?
 choice_a: :dwarf: Deep Rock Galactic
-choice_b: :gun: CS:GO
+choice_b: :gun: Counter-Strike 2
 choice_c: :military_helmet: BattleBit Remastered
 choice_d: :halo: Halo 2
-choice_e: :ghost: Phasmaphobia
-choice_f: :zombie: Project Zomboid
+choice_e: :robot: Titanfall 2
+choice_f: :police_officer: Perfect Heist 2
+choice_g: :killerqueen: Killer Queen Black
+choice_h: :cloud_rain: Risk of Rain 2
+choice_i: :splitgate: Splitgate
+
+
+## Other Games
+
+:race_car: Rocket League
+:red_circle: Rounds
+:flashlight: Torchlight 2
+:imp: Diablo 3
+:fire: Gunfire Reborn
+:rat: Warhammer Vermintide 2
+:pouting_cat: Garfield Kart: Furious Racing
+:fallguys: Fall Guys
+:fortnite: Fortnite
+:elite: Elite Dangeours
+:chains: Dungeon of the Endless
+:detective: Deceive, Inc
+:blue_circle: Core Keeper
+:bow_and_arrow: Valheim
+:amongus: Among Us
+:european_castle: AoE 2
+:overwatch: Overwatch 2
+:parachute: Helldivers
+
+
+## Scary Games
+
+:ghost: Phasmaphobia
+:zombie: Project Zomboid
+:man_zombie: Left 4 Dead 2
