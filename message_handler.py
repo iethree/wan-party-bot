@@ -84,7 +84,7 @@ async def respond_to(client, message):
     responses = [
         ["joke", random_joke()],
         ["yoda", get_yoda_quote()],
-        [re.compile(r" [8b][0o*][t7] "), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
+        [re.compile(r"\b[8b][0o*][t7]\b"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         [re.compile(r"w[\w*]{0,3}n.{0,2}[8b][\w*]{0,3}[ty]"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         [re.compile(r"d[eéèë*3!]ck"), hit_the_deck()],
         [re.compile(r"d[oóòö*0!]nk"), hit_the_donk()],
