@@ -762,13 +762,13 @@ async def select(ctx, *args):
     await ctx.send(msg)
 
 @bot.command()
-async def sepuku(ct, *args):
+async def sepuku(ctx, *args):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
 
 @bot.command()
-async def seppuku(ct, *args):
+async def seppuku(ctx, *args):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
 
 @bot.command()
-async def die(ct, *args):
+async def die(ctx, *args):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
