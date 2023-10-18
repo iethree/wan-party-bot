@@ -760,3 +760,15 @@ async def select(ctx, *args):
     else:
         msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it."
     await ctx.send(msg)
+
+@bot.command()
+async def sepuku(ct, *args):
+    await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
+
+@bot.command()
+async def seppuku(ct, *args):
+    await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
+
+@bot.command()
+async def die(ct, *args):
+    await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
