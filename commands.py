@@ -755,7 +755,7 @@ async def select(ctx, *args):
     msg = f"You have selected the {item}. "
     if random.randrange(0, 10) == 0:
         msg += f"The {item} brings you peace and prosperity."
-        ctx.send(msg)
+        await ctx.send(msg)
         msg = f"The {item} has broken. You shouldn't have bought it."
     else:
         msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it."
