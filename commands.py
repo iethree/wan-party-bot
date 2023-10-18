@@ -758,5 +758,5 @@ async def select(ctx, *args):
         ctx.send(msg)
         msg = f"The {item} has broken. You shouldn't have bought it."
     else:
-        msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it"
+        msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it."
     await ctx.send(msg)
