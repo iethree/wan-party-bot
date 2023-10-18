@@ -751,6 +751,12 @@ async def mysterious_merchant(ctx):
 async def select(ctx, *args):
     if len(args) == 0:
         await ctx.send("You have to select something!")
-    msg = f"You have selected the {' '.join(args)}. You have been cursed by the {' '.join(args)}. You shouldn't have " \
-          f"bought it."
+    item = ' '.join(args)
+    msg = f"You have selected the {item}. "
+    if random.randrange(0, 10) == 0:
+        msg += f"The {item} brings you peace and prosperity."
+        ctx.send(msg)
+        msg = f"The {item} has broken. You shouldn't have bought it."
+    else:
+        msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it"
     await ctx.send(msg)
