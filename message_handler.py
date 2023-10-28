@@ -79,6 +79,10 @@ async def respond_to(client, message):
             lambda c, m: "star wars" in c and m.channel.name != "star-wars",
             get_emoji(message.guild, "stormtrooper"),
         ),
+        MatchingReaction(
+            lambda content, message: bool(re.search(r"d[eéèë*3!]ck|d[oóòö*0!]nk|g[*\w]{0,2}b[*\w]{0,2}\s*g[*\w]{0,5}r", content)),
+            get_emoji(message.guild, "thedeck"),
+        ),
     ]
 
     responses = [
@@ -86,11 +90,7 @@ async def respond_to(client, message):
         ["yoda", get_yoda_quote()],
         [re.compile(r"\b[8b][0o*][t7]\b"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         [re.compile(r"w[\w*]{0,3}n.{0,2}[8b][\w*]{0,3}[ty]"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        [re.compile(r"d[eéèë*3!]ck"), hit_the_deck()],
-        [re.compile(r"d[oóòö*0!]nk"), hit_the_donk()],
-        [re.compile(r"g[*\w]{0,2}b[*\w]{0,2}\s*g[*\w]{0,5}r"), hit_the_deck()],
         ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
-        ['slide', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
 
     for reaction in reactions:
