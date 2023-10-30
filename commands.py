@@ -636,7 +636,7 @@ async def quotestats(ctx):
         return
     result = ""
     for row in q:
-        result += f"<@{row[0]}> has been quoted {str(row[1])} times\n"
+        result += f"**{row[0]}** has been quoted {str(row[1])} times\n"
     await ctx.send(result)
 
 
