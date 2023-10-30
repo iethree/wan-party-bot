@@ -1,5 +1,4 @@
 from discord.ext import commands
-import discord
 from datetime import *
 from dick import *
 from sing import *
@@ -626,7 +625,6 @@ async def sayquote(ctx):
 
 @bot.command()
 async def quotestats(ctx):
-    client = discord.Client(intents=discord.Intents.default())
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
@@ -638,8 +636,7 @@ async def quotestats(ctx):
         return
     result = ""
     for row in q:
-        user = client.get_user(row[0])
-        result += f"{user.display_name} has been quoted {str(row[1])} times\n"
+        result += f"<@{row[0]}> has been quoted {str(row[1])} times\n"
     await ctx.send(result)
 
 
