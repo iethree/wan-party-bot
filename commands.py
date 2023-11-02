@@ -774,4 +774,4 @@ async def die(ctx, *args):
 @bot.command()
 async def discipline_ryan(ctx):
     await ctx.send(f'No! Bad Ryan! Bad!')
-    await ctx.send(file=discord.File('https://imgur.com/a/K2kirl5'))
+    await ctx.send('https://media.giphy.com/media/fJkTsWCMViRYA/giphy.gif')
