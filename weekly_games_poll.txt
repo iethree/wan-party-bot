@@ -1,12 +1,16 @@
 ## Current Poll
 
 /poll question: What to play on Sunday?
-choice_a: :gun: Counter-Strike 2
-choice_b: :military_helmet: BattleBit Remastered
-choice_c: :halo: Halo 4
-choice_d: :robot: Titanfall 2
-choice_e: :splitgate: Splitgate
-choice_f: :checkered_flag: Disney Speedstorm
+choice_a: :red_circle: Rounds
+choice_b:  :flashlight: Torchlight 2
+choice_c: :imp: Diablo 3
+choice_d: :military_helmet: BattleBit Remastered
+choice_e: :robot: Titanfall 2
+choice_f: :splitgate: Splitgate
+choice_g: :checkered_flag: Disney Speedstorm
+choice_h: :fist: Super Smash Bros Ultimate
+choice_i: :blue_car: MarioKart 8 Deluxe
+choice_j: :fallguys: Fall Guys
 
 ## Other Games
 
@@ -62,3 +66,9 @@ choice_f: :checkered_flag: Disney Speedstorm
 :ghost: Phasmaphobia
 :zombie: Project Zomboid
 :man_zombie: Left 4 Dead 2
+
+### Switch Games
+:fist: Super Smash Bros Ultimate
+:blue_car: MarioKart 8 Deluxe
+:bear: Animal Crossing: New Horizons
+
