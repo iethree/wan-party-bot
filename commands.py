@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 from datetime import *
 from dick import *
 from sing import *
@@ -769,3 +770,8 @@ async def seppuku(ctx, *args):
 @bot.command()
 async def die(ctx, *args):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
+
+@bot.command()
+async def discipline_ryan(ctx):
+    await ctx.send(f'No! Bad Ryan! Bad!')
+    await ctx.send('https://media.giphy.com/media/fJkTsWCMViRYA/giphy.gif')
