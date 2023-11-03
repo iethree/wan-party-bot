@@ -84,6 +84,10 @@ async def respond_to(client, message):
             lambda content, message: bool(re.search(r"d[eéèë*3!]ck|d[oóòö*0!]nk|g[*\w]{0,2}b[*\w]{0,2}\s*g[*\w]{0,5}r", content)),
             get_emoji(message.guild, "thedeck"),
         ),
+        MatchingReaction(
+            lambda c, m: "ryan" in m.author.display_name.lower() and ("wow" in c or "warcraft" in c),
+            get_emoji(message.guild, "wow"),
+        ),
     ]
 
     responses = [
