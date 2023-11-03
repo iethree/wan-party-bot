@@ -1,4 +1,3 @@
-from discord.ext import commands
 import discord
 from datetime import *
 from dick import *
@@ -7,6 +6,7 @@ from giphy import *
 from thinking import thinking
 from leaderboards import get_leaderboards
 import random
+from client import client
 
 import re
 from get_error_message import (
@@ -17,7 +17,7 @@ from markov_haiku_discord import gen_haiku
 
 DATABASE = "wanparty.db"
 
-bot = commands.Bot(command_prefix="/")
+tree = discord.app_commands.CommandTree(client)
 
 INSTRUCTIONS = {
     "+": (lambda x, y: x + y),
@@ -32,7 +32,7 @@ INS_RE = "[" + re.escape("".join(INSTRUCTIONS.keys())) + "]"
 DICE_RE = r"(\d+)\s*d\s*(\d+)\s*(" + INS_RE + r"\s*\d+)?"
 
 
-@bot.command()
+@tree.command()
 async def bet(ctx, bet: int, guess: str):
     message = ""
     user_id = ctx.message.author.id
@@ -95,7 +95,7 @@ async def bet(ctx, bet: int, guess: str):
 
 
 # fuck around and find out
-@bot.command(name="yeet")
+@tree.command(name="yeet")
 async def yeet_bet(ctx, guess: str):
     balance = await get_balance(ctx.message.author.id)
     await ctx.send("https://gph.is/g/4wMRo3n")
@@ -124,14 +124,14 @@ async def update_balance(user_id, update):
 
 
 # set balance command for testing purposes
-@bot.command(name="devset")
+@tree.command(name="devset")
 async def dev_set(ctx, amount: int):
     await update_balance(ctx.message.author.id, amount)
     balance = await get_balance(ctx.message.author.id)
     await ctx.send(f"Your balance has been set to {balance[0]}")
 
 
-@bot.command(name="balance")
+@tree.command(name="balance")
 async def eval_balance(ctx):
     balance = await get_balance(ctx.message.author.id)
     if balance is not None:
@@ -141,14 +141,14 @@ async def eval_balance(ctx):
     await ctx.send(f"{ctx.message.author.mention} doesn't have a balance")
 
 
-@bot.command(name="myid")
+@tree.command(name="myid")
 async def my_id(ctx):
     user_id = ctx.message.author.id
     user_name = ctx.message.author.display_name
     await ctx.send(ctx.message.author.id)
 
 
-@bot.command(name="id")
+@tree.command(name="id")
 async def id(ctx):
     if len(ctx.message.raw_mentions):
         await ctx.send(
@@ -156,7 +156,7 @@ async def id(ctx):
         )
 
 
-@bot.command()
+@tree.command()
 async def beg(ctx):
     row = await get_balance(ctx.message.author.id)
     if row is not None and row[0] == 0:
@@ -170,7 +170,7 @@ async def beg(ctx):
         await ctx.send(get_error_message_for_fun_times_everyone_loves_error_messages())
 
 
-@bot.command()
+@tree.command()
 async def rob(ctx):
     [balance] = await get_balance(ctx.message.author.id)
     for victim in ctx.message.mentions:
@@ -180,19 +180,19 @@ async def rob(ctx):
     await update_balance(ctx.message.author.id, balance)
 
 
-# @bot.command
+# @tree.command
 # async def pay(ctx, member: MemberConverter):
 #     # etc you get it
 
 
-@bot.command()
+@tree.command()
 async def rollin(ctx):
     await ctx.send("Aww yeah 😎")
 
 
-@bot.command()
-async def puppet(ctx, channel_name, msg):
-    channels = bot.get_all_channels()
+@tree.command()
+async def puppet(ctx, channel_name: str, msg: str):
+    channels = tree.get_all_channels()
     for channel in channels:
         if channel.name == channel_name:
             await channel.send(msg)
@@ -217,8 +217,8 @@ def do_the_thing(dice):
     return rolls, result
 
 
-@bot.command()
-async def roll(ctx, *, arg=None):
+@tree.command()
+async def roll(ctx, *, arg: int=None):
     """XdY+Z AdB+C etc"""
     if arg is None:
         await ctx.send(str(random.randint(1, 100)))
@@ -240,8 +240,8 @@ async def roll(ctx, *, arg=None):
     await ctx.send("I rolled: " + " ".join(rolls) + ", result: " + str(result))
 
 
-@bot.command()
-async def haiku(ctx, *, arg=None):
+@tree.command()
+async def haiku(ctx, *, arg:str =None):
     """
     Call as /haiku @targetuser.
     Will generate a markov chain haiku using the
@@ -279,8 +279,8 @@ async def haiku(ctx, *, arg=None):
     return
 
 
-@bot.command()
-async def rhyme(ctx, *, arg=None):
+@tree.command()
+async def rhyme(ctx, *, arg: str=None):
     """
     Call as /rhyme 'word'.
     Will generate a list of rhymes from the word.
@@ -327,8 +327,8 @@ async def rhyme(ctx, *, arg=None):
     return
 
 
-@bot.command()
-async def sql(ctx, *, arg=None):
+@tree.command()
+async def sql(ctx, *, arg: str=None):
 
     if is_naughty(ctx.message.author.id):
         result = "Your SQL privileges have been revoked while in jail"
@@ -347,8 +347,8 @@ async def sql(ctx, *, arg=None):
     await ctx.send("```sql\n" + str(result) + "\n```")
 
 
-@bot.command()
-async def jail(ctx, action=None, person=None):
+@tree.command()
+async def jail(ctx, action: str=None, person: str=None):
 
     if action == "break" or action == "bust":
         if is_naughty(ctx.message.author.id):
@@ -466,7 +466,7 @@ async def jail_update(ctx):
 
 
 # doesn't work
-@bot.command()
+@tree.command()
 async def who(ctx):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -537,53 +537,53 @@ def beg_mercy(user_id):
     conn.close()
 
 
-@bot.command()
+@tree.command()
 async def game_poll(ctx):
     poll_text = open("./weekly_games_poll.txt", encoding="utf8").read()
     await ctx.send(poll_text)
 
 
-@bot.command()
+@tree.command()
 async def dick(ctx):
     dick = get_random_quote("dick").replace("\n", "\n> ")
     await ctx.send(f"> {dick} ")
 
 
-@bot.command()
+@tree.command()
 async def dickens(ctx):
     dickens = get_random_quote("dickens").replace("\n", "\n> ")
     await ctx.send(f"> {dickens} ")
 
 
-@bot.command()
+@tree.command()
 async def willy(ctx):
     willy = get_random_quote("willy").replace("\n", "\n> ")
     await ctx.send(f"> {willy} ")
 
 
-@bot.command()
+@tree.command()
 async def thomas(ctx):
     thomas = get_random_quote("thomas").replace("\n", "\n> ")
     await ctx.send(f"> {thomas} ")
 
 
-@bot.command()
+@tree.command()
 async def jane(ctx):
     jane = get_random_quote("jane").replace("\n", "\n> ")
     await ctx.send(f"> {jane} ")
 
-@bot.command()
+@tree.command()
 async def v(ctx):
     dwarf = get_dwarf_quote()
     await ctx.send(dwarf)
 
-@bot.command()
+@tree.command()
 async def rick(ctx):
     song = sing_to_me()
     await ctx.send(song)
 
 
-@bot.command()
+@tree.command()
 async def quote(ctx):
     msg = ctx.message
     try:
@@ -610,7 +610,7 @@ async def quote(ctx):
     await ctx.message.add_reaction("✅")
 
 
-@bot.command()
+@tree.command()
 async def sayquote(ctx):
     try:
         conn = sqlite3.connect(DATABASE)
@@ -624,7 +624,7 @@ async def sayquote(ctx):
 
     await ctx.send(f"{q[1]} --<@{q[0]}>")
 
-@bot.command()
+@tree.command()
 async def quotestats(ctx):
     try:
         conn = sqlite3.connect(DATABASE)
@@ -641,11 +641,11 @@ async def quotestats(ctx):
     await ctx.send(result)
 
 
-@bot.command()
+@tree.command()
 async def loading(ctx):
     await thinking(ctx, 10)
 
-@bot.command()
+@tree.command()
 async def leaderboards(ctx):
     try:
         async with ctx.channel.typing():
@@ -666,7 +666,7 @@ async def leaderboards(ctx):
         print(e)
         await ctx.send('oops, something went wrong :blush:')
 
-@bot.command()
+@tree.command()
 async def quotedump(ctx):
     msg = "suck it Tim"
     try:
@@ -683,7 +683,7 @@ async def quotedump(ctx):
     await ctx.send(msg)
 
 
-@bot.command()
+@tree.command()
 async def mysterious_merchant(ctx):
     def get_article(word):
         if word[0].lower() in ["a", "e", "i", "o", "u"]:
@@ -744,9 +744,9 @@ async def mysterious_merchant(ctx):
     except Exception as e:
         await ctx.send(e)
 
-
-@bot.command()
-async def select(ctx, *args):
+@tree.command()
+async def select(ctx, arg1: str, arg2: str=None, arg3: str=None, arg4: str=None): # no arrays allowed doofus
+    args = [arg1, arg2, arg3, arg4]
     if len(args) == 0:
         await ctx.send("You have to select something!")
     item = ' '.join(args)
@@ -759,19 +759,20 @@ async def select(ctx, *args):
         msg += f"You have been cursed by the {' '.join(args)}. You shouldn't have bought it."
     await ctx.send(msg)
 
-@bot.command()
-async def sepuku(ctx, *args):
+@tree.command()
+async def sepuku(ctx):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
 
-@bot.command()
-async def seppuku(ctx, *args):
+@tree.command()
+async def seppuku(ctx):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
 
-@bot.command()
-async def die(ctx, *args):
+@tree.command()
+async def die(ctx):
     await ctx.send("https://giphy.com/gifs/KRY2oGS7SPvO0")
 
-@bot.command()
+@tree.command()
 async def discipline_ryan(ctx):
     await ctx.send(f'No! Bad Ryan! Bad!')
-    await ctx.send('https://media.giphy.com/media/fJkTsWCMViRYA/giphy.gif')
+    await ctx.send('https://imgur.com/a/21iBAu0')
+
