@@ -9,6 +9,7 @@ from datetime import date
 from sing import *
 from client import client
 from commands import tree
+from quote import quote
 
 initiate_tables()
 
@@ -20,7 +21,7 @@ async def on_ready():
     commit = sub.run("git log -1 --pretty=%B".split(), stdout=sub.PIPE)
     env = sub.run("hostname".split(), stdout=sub.PIPE)
     status_info = env.stdout.decode("utf-8") + " | " + commit.stdout.decode("utf-8")
-    await tree.sync()
+    # await tree.sync()
 
     await client.change_presence(activity=discord.Game(status_info))
 
@@ -30,11 +31,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if message.content.startswith("/quote"):
+        await quote(message)
+        return
+
     print(message.author.display_name + ": " + message.content)
 
     today = date.today().strftime("%m-%d")
 
-    if (today == "04-01"):
+    if today == "04-01":
         await message.channel.send(sing_to_me())
         return
 
@@ -44,5 +49,10 @@ async def on_message(message):
 
     if response:
         await message.channel.send(response)
+
+@client.event
+async def on_raw_reaction_add(reaction, user):
+    print(reaction.message.content)
+
 
 client.run(os.getenv("DISCORD_TOKEN"))
