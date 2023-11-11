@@ -1,16 +1,16 @@
 ## Current Poll
 
 /poll question: What to play on Sunday?
-choice_a: :red_circle: Rounds
-choice_b:  :flashlight: Torchlight 2
-choice_c: :imp: Diablo 3
-choice_d: :military_helmet: BattleBit Remastered
-choice_e: :robot: Titanfall 2
-choice_f: :splitgate: Splitgate
-choice_g: :checkered_flag: Disney Speedstorm
-choice_h: :fist: Super Smash Bros Ultimate
-choice_i: :blue_car: MarioKart 8 Deluxe
-choice_j: :fallguys: Fall Guys
+choice_a: :military_helmet: BattleBit Remastered
+choice_b: :robot: Titanfall 2
+choice_c: :splitgate: Splitgate
+choice_d: :fist: Super Smash Bros Ultimate
+choice_e: :cloud_rain: Risk of Rain Remastered
+choice_f: :office: Lethal Company
+choice_g: :rat: Warhammer Vermintide 2
+choice_h: :overwatch: Overwatch 2
+choice_i: :hammer: Warhammer 40k Darktide
+
 
 ## Other Games
 
@@ -26,6 +26,8 @@ choice_j: :fallguys: Fall Guys
 :splitgate: Splitgate
 :rat: Warhammer Vermintide 2
 :overwatch: Overwatch 2
+:hammer: Warhammer 40k Darktide
+
 
 ### Racers
 
@@ -38,6 +40,8 @@ choice_j: :fallguys: Fall Guys
 
 :killerqueen: Killer Queen Black
 :cloud_rain: Risk of Rain 2
+:cloud_rain: Risk of Rain Remastered
+:office: Lethal Company
 :red_circle: Rounds
 :flashlight: Torchlight 2
 :imp: Diablo 3
