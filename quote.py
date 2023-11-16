@@ -2,10 +2,10 @@ import sqlite3
 
 DATABASE = "wanparty.db"
 
-blacklist = ["sigh-politics", "Bible", "anglicanism"]
+blacklist = ["sigh-politics", "bible", "anglicanism", "formative movie crushes of the youthful era"]
 
 async def quote(message):
-    if message.channel.name in blacklist:
+    if message.channel.name.lower() in blacklist:
         await message.add_reaction("🙅‍♀️")
         return
 
