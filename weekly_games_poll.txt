@@ -4,12 +4,12 @@
 choice_a: :military_helmet: BattleBit Remastered
 choice_b: :robot: Titanfall 2
 choice_c: :splitgate: Splitgate
-choice_d: :fist: Super Smash Bros Ultimate
-choice_e: :cloud_rain: Risk of Rain Remastered
+choice_d: :parachute: Helldivers
+choice_e: :cloud_rain: Risk of Rain 2
 choice_f: :office: Lethal Company
 choice_g: :rat: Warhammer Vermintide 2
-choice_h: :overwatch: Overwatch 2
-choice_i: :hammer: Warhammer 40k Darktide
+choice_h: :hammer: Warhammer 40k Darktide
+choice_i: :fortnite: Fortnite
 
 
 ## Other Games
