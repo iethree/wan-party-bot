@@ -3,13 +3,12 @@
 /poll question: What to play on Sunday?
 choice_a: :military_helmet: BattleBit Remastered
 choice_b: :robot: Titanfall 2
-choice_c: :splitgate: Splitgate
-choice_d: :parachute: Helldivers
-choice_e: :cloud_rain: Risk of Rain 2
+choice_c: :dragon: Palworld
+choice_d: :motorway: Streets of Rogue
+choice_e: :dwarf: Deep Rock Galactic
 choice_f: :office: Lethal Company
-choice_g: :rat: Warhammer Vermintide 2
+choice_g: :cloud_rain: Risk of Rain 2
 choice_h: :hammer: Warhammer 40k Darktide
-choice_i: :fortnite: Fortnite
 
 
 ## Other Games
@@ -38,6 +37,8 @@ choice_i: :fortnite: Fortnite
 
 ### Misc
 
+:motorway: Streets of Rogue
+:dragon: Palworld
 :killerqueen: Killer Queen Black
 :cloud_rain: Risk of Rain 2
 :cloud_rain: Risk of Rain Remastered
