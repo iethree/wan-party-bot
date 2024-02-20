@@ -9,7 +9,7 @@ def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient"},
+            {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient"},
             {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
         ]
     )
