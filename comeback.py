@@ -22,7 +22,7 @@ def get_ai_comeback(msg):
     completion = ai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a sarcastic wise-cracking stand up comedian."},
+            {"role": "system", "content": "Your name is WanBot and you are a sarcastic wise-cracking stand up comedian."},
             {"role": "user", "content": "write a short comeback to " + msg }
         ]
     )
