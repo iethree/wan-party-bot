@@ -10,6 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
+from comeback import comeback
 
 initiate_tables()
 
@@ -31,11 +32,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    print(message.author.display_name + ": " + message.content)
+
     if message.content.startswith("/quote"):
         await quote(message)
         return
 
-    print(message.author.display_name + ": " + message.content)
+    if message.content.startswith("/comeback"):
+        await comeback(message)
+        return
 
     today = date.today().strftime("%m-%d")
 
