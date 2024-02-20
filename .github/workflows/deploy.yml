@@ -19,4 +19,5 @@ jobs:
     env:
       SSH_KEY: "${{ secrets.SSH_KEY}}"
       INSTANCE_IP: "${{ secrets.INSTANCE_IP }}"
+      OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}"
 

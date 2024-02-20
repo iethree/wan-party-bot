@@ -1,3 +1,4 @@
 discord
 giphy_client
 wonderwords
+openai

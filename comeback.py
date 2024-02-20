@@ -1,9 +1,11 @@
 import random
+import os
+from openai import OpenAI
+ai_client = OpenAI()
 
 DATABASE = "wanparty.db"
 
 blacklist = ["sigh-politics", "bible", "anglicanism", "formative movie crushes of the youthful era"]
-
 
 def get_comeback(msg):
     comebacks = [
@@ -16,6 +18,17 @@ def get_comeback(msg):
     ]
 
     return random.choice(comebacks)
+
+def get_ai_comeback(msg):
+    completion = ai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a sarcastic wise-cracking stand up comedian."},
+            {"role": "user", "content": "write a short comeback to " + msg }
+        ]
+    )
+    print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
 
 async def comeback(message):
     try:
@@ -32,8 +45,11 @@ async def comeback(message):
         await message.add_reaction("🤷")
         return
 
-    msg = get_comeback(quoted_msg.content)
+    try:
+        msg = get_ai_comeback(quoted_msg.content)
+    except Exception as e:
+        print("error getting ai comeback")
+        print(e)
+        msg = get_comeback(quoted_msg.content)
 
     await quoted_msg.reply(msg)
-
-
