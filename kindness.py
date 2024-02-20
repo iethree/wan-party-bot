@@ -1,4 +1,3 @@
-import random
 from openai import OpenAI
 ai_client = OpenAI()
 
@@ -6,30 +5,18 @@ DATABASE = "wanparty.db"
 
 blacklist = ["sigh-politics", "bible", "anglicanism", "formative movie crushes of the youthful era"]
 
-def get_comeback(msg):
-    comebacks = [
-        "that's what she said 😏",
-        "your mom " + msg,
-        "no you " + msg,
-        "I know you are but what am I?",
-        "🙄",
-        "🤣"
-    ]
-
-    return random.choice(comebacks)
-
-def get_ai_comeback(msg):
+def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a sarcastic wise-cracking stand up comedian."},
-            {"role": "user", "content": "write a short comeback to " + msg }
+            {"role": "system", "content": "You are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient"},
+            {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
         ]
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
-async def comeback(message):
+async def kindness(message):
     try:
         if message.channel.name.lower() in blacklist:
             await message.add_reaction("🙅‍♀️")
@@ -40,16 +27,17 @@ async def comeback(message):
     try:
         quoted_msg = await message.channel.fetch_message(message.reference.message_id)
     except Exception as e:
-        print('error getting comeback message')
+        print('error getting kindness message')
         await message.add_reaction("🤷")
         return
 
     try:
-        msg = get_ai_comeback(quoted_msg.content)
+        msg = get_ai_kindness(quoted_msg.content)
     except Exception as e:
-        print("error getting ai comeback")
+        print("error getting ai kindness")
         print(e)
-        msg = get_comeback(quoted_msg.content)
+        await message.add_reaction("❤️")
+        return
 
     await quoted_msg.reply(msg)
 

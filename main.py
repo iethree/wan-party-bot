@@ -11,6 +11,7 @@ from client import client
 from commands import tree
 from quote import quote
 from comeback import comeback
+from kindness import kindness
 
 initiate_tables()
 
@@ -40,6 +41,10 @@ async def on_message(message):
 
     if message.content.startswith("/comeback"):
         await comeback(message)
+        return
+
+    if message.content.startswith("/kindness"):
+        await kindness(message)
         return
 
     today = date.today().strftime("%m-%d")
