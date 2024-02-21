@@ -7,8 +7,10 @@ verify_ssl = true
 black = "*"
 
 [packages]
-giphy_client = "*"
 discord = "*"
+giphy-client = "*"
+wonderwords = "*"
+openai = "*"
 
 [scripts]
 echo = "echo hello"
