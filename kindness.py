@@ -1,9 +1,6 @@
+from blacklist import is_blacklisted_channel
 from openai import OpenAI
 ai_client = OpenAI()
-
-DATABASE = "wanparty.db"
-
-blacklist = ["sigh-politics", "bible", "anglicanism", "formative movie crushes of the youthful era"]
 
 def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
@@ -18,7 +15,7 @@ def get_ai_kindness(msg):
 
 async def kindness(message):
     try:
-        if message.channel.name.lower() in blacklist:
+        if is_blacklisted_channel(message.channel.name):
             await message.add_reaction("🙅‍♀️")
             return
     except Exception as e:
