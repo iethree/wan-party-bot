@@ -10,8 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
-from comeback import comeback
-from kindness import kindness
+from chat import comeback, kindness, bot_response
 
 initiate_tables()
 
@@ -45,6 +44,10 @@ async def on_message(message):
 
     if message.content.startswith("/kindness"):
         await kindness(message)
+        return
+
+    if str(client.user.id) in message.content:
+        await bot_response(message)
         return
 
     today = date.today().strftime("%m-%d")
