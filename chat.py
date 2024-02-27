@@ -47,6 +47,17 @@ def get_ai_comeback(msg):
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
+def get_ted_response(msg):
+    completion = ai_client.chat.completions.create(
+        model=gpt_model,
+        messages=[
+            {"role": "system", "content": "You are coach Ted Lasso"},
+            {"role": "user", "content": "write a short response to " + msg }
+        ]
+    )
+    print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
+
 def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
@@ -113,6 +124,30 @@ async def comeback(message):
         msg = get_ai_comeback(quoted_msg.content)
     except Exception as e:
         print("error getting ai comeback")
+        print(e)
+        msg = get_comeback(quoted_msg.content)
+
+    await quoted_msg.reply(msg)
+
+async def ted(message):
+    try:
+        if is_blacklisted_channel(message.channel.name):
+            await message.add_reaction("🙅‍♀️")
+            return
+    except Exception as e:
+        print("error checking blacklist")
+
+    try:
+        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
+    except Exception as e:
+        print('error getting comeback message')
+        await message.add_reaction("🤷")
+        return
+
+    try:
+        msg = get_ted_response(quoted_msg.content)
+    except Exception as e:
+        print("error getting ai ted response")
         print(e)
         msg = get_comeback(quoted_msg.content)
 
