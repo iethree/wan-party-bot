@@ -15,6 +15,7 @@ from reaction import *
 def sometimes(chance):
     return random.random() < chance
 
+did_u_say_wanbot = re.compile(r"\bw[\w*]{0,3}n.{0,2}[8b][\w*]{0,3}[ty]\b")
 
 STATIC_REACTIONS = [
     Reaction("poop", "💩"),
@@ -25,10 +26,13 @@ STATIC_REACTIONS = [
         lambda c, m: sometimes(0.02) and "shplay" in m.author.display_name.lower(), "🙄"
     ),
     MatchingReaction(
-        lambda c, m: sometimes(0.02) and "ben" in m.author.display_name.lower(), "❤️"
+        lambda c, m: sometimes(0.1) and "waluigi" in m.author.display_name.lower(), "❤️"
     ),
     MatchingReaction(
         lambda c, m: sometimes(0.05) and "local_oaf" in m.author.display_name.lower(), "🚂"
+    ),
+    MatchingReaction(
+        lambda c, m: did_u_say_wanbot.search(c) is not None, "💅"
     ),
 ]
 
@@ -97,7 +101,6 @@ async def respond_to(client, message):
         ["joke", random_joke()],
         ["yoda", get_yoda_quote()],
         [re.compile(r"\b[8b][0o*][t7]\b"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
-        [re.compile(r"\bw[\w*]{0,3}n.{0,2}[8b][\w*]{0,3}[ty]\b"), "https://giphy.com/gifs/KRY2oGS7SPvO0"],
         ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
 
