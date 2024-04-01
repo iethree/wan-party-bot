@@ -25,9 +25,15 @@ conditional_prompts = [
     {
         "prompt": "You are obsessed with Rick Astley and make reference to 'Never Gonna Give You Up' in every conversation",
         "condition": date.today().strftime("%m-%d") == "04-01"
+    },
+    {
+        "prompt": "You make obnoxious references to 420, 'trees', and 'weed' in every conversation, tuned specifically to make someone's dad annoyed",
+        "condition": date.today().strftime("%m-%d") == "04-20"
     }
 ]
 
+# a less lazy dev might pass in the message object and change the condition entries into lambdas that can be called
+# with the msg to craft responses tailored to the person responding, or specific words in their message
 def get_conditional_prompts():
     text = ""
     for prompt in conditional_prompts:
