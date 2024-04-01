@@ -11,6 +11,7 @@ from client import client
 from commands import tree
 from quote import quote
 from chat import comeback, kindness, bot_response, ted
+import math
 
 initiate_tables()
 
@@ -56,7 +57,7 @@ async def on_message(message):
 
     today = date.today().strftime("%m-%d")
 
-    if today == "04-01":
+    if today == "04-01" and math.random() < 0.05:
         await message.channel.send(sing_to_me())
         return
 
