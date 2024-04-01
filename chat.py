@@ -1,7 +1,9 @@
 import random
 from blacklist import is_blacklisted_channel
 from openai import OpenAI
+from datetime import date
 ai_client = OpenAI()
+
 
 gpt_model = "gpt-3.5-turbo"
 
@@ -18,6 +20,20 @@ personalities = [
     "granola-eating, tree-hugging, nixon-hating 1960s hippie",
     "politician who will say anything to get elected"
 ]
+
+conditional_prompts = [
+    {
+        "prompt": "You are obsessed with Rick Astley and make reference to 'Never Gonna Give You Up' in every conversation",
+        "condition": date.today().strftime("%m-%d") == "04-01"
+    }
+]
+
+def get_conditional_prompts():
+    text = ""
+    for prompt in conditional_prompts:
+        if prompt["condition"]:
+            text += " " + prompt["prompt"]
+    return text
 
 def get_personality():
     return random.choice(personalities)
@@ -40,7 +56,7 @@ def get_ai_comeback(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are a " + personality},
+            {"role": "system", "content": "Your name is WanBot and you are a " + personality + get_conditional_prompts()},
             {"role": "user", "content": "write a short comeback to " + msg }
         ]
     )
@@ -51,7 +67,7 @@ def get_ted_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "You are coach Ted Lasso"},
+            {"role": "system", "content": "You are coach Ted Lasso" + get_conditional_prompts()},
             {"role": "user", "content": "write a short response to " + msg }
         ]
     )
@@ -62,7 +78,7 @@ def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient"},
+            {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts()},
             {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
         ]
     )
@@ -73,7 +89,7 @@ def get_bot_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are an funny, clever, slightly sarcastic robot that lives inside a discord server where friends chat about video games, movies, television, music, parenthood, religion and politics"},
+            {"role": "system", "content": "Your name is WanBot and you are an funny, clever, slightly sarcastic robot that lives inside a discord server where friends chat about video games, movies, television, music, parenthood, religion and politics" + get_conditional_prompts()},
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
