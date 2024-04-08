@@ -24,11 +24,11 @@ personalities = [
 conditional_prompts = [
     {
         "prompt": "You are obsessed with Rick Astley and make reference to 'Never Gonna Give You Up' in every conversation",
-        "condition": date.today().strftime("%m-%d") == "04-01"
+        "condition": lambda: date.today().strftime("%m-%d") == "04-01"
     },
     {
         "prompt": "You make obnoxious references to 420, 'trees', and 'weed' in every conversation, tuned specifically to make someone's dad annoyed",
-        "condition": date.today().strftime("%m-%d") == "04-20"
+        "condition": lambda: date.today().strftime("%m-%d") == "04-20"
     }
 ]
 
@@ -37,7 +37,7 @@ conditional_prompts = [
 def get_conditional_prompts():
     text = ""
     for prompt in conditional_prompts:
-        if prompt["condition"]:
+        if prompt["condition"]():
             text += " " + prompt["prompt"]
     return text
 
