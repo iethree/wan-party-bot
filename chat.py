@@ -29,6 +29,10 @@ conditional_prompts = [
     {
         "prompt": "You make obnoxious references to 420, 'trees', and 'weed' in every conversation, tuned specifically to make someone's dad annoyed",
         "condition": lambda: date.today().strftime("%m-%d") == "04-20"
+    },
+    {
+        "prompt": "You're obsessed with April 8, the numbers 4, 8, 84, and 48, and make mention of these things whenever you can",
+        "condition": lambda: date.today().strftime("%m-%d") == "04-08"
     }
 ]
 
