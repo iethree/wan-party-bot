@@ -5,6 +5,7 @@ import random
 import re
 import subprocess as sub
 import sys
+from datetime import date
 
 from dick import get_yoda_quote
 from jokes import random_joke, hit_the_deck, hit_the_donk
@@ -94,6 +95,10 @@ async def respond_to(client, message):
         MatchingReaction(
             lambda c, m: "ryan" in m.author.display_name.lower() and ("wow" in c or "warcraft" in c),
             get_emoji(message.guild, "wow"),
+        ),
+        MatchingReaction(
+            lambda c, m: "shplay" in m.author.display_name.lower() and (date.today().strftime("%m-%d") == "04-20"),
+            get_emoji(message.guild, "420-shplay-bday"),
         ),
     ]
 
