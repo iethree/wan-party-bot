@@ -98,7 +98,7 @@ async def respond_to(client, message):
         ),
         MatchingReaction(
             lambda c, m: "shplay" in m.author.display_name.lower() and (date.today().strftime("%m-%d") == "04-20"),
-            get_emoji(message.guild, "420-shplay-bday"),
+            get_emoji(message.guild, "420shplaybday"),
         ),
     ]
 
