@@ -2,8 +2,8 @@ import random
 from blacklist import is_blacklisted_channel
 from openai import OpenAI
 from datetime import date
-
 ai_client = OpenAI()
+
 
 gpt_model = "gpt-3.5-turbo"
 
@@ -36,7 +36,6 @@ conditional_prompts = [
     }
 ]
 
-
 # a less lazy dev might pass in the message object and change the condition entries into lambdas that can be called
 # with the msg to craft responses tailored to the person responding, or specific words in their message
 def get_conditional_prompts():
@@ -46,10 +45,8 @@ def get_conditional_prompts():
             text += " " + prompt["prompt"]
     return text
 
-
 def get_personality():
     return random.choice(personalities)
-
 
 def get_comeback(msg):
     comebacks = [
@@ -63,72 +60,51 @@ def get_comeback(msg):
 
     return random.choice(comebacks)
 
-
 def get_ai_comeback(msg):
     personality = get_personality()
     print("answering as a " + personality)
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system",
-             "content": "Your name is WanBot and you are a " + personality + get_conditional_prompts()},
-            {"role": "user", "content": "write a short comeback to " + msg}
+            {"role": "system", "content": "Your name is WanBot and you are a " + personality + get_conditional_prompts()},
+            {"role": "user", "content": "write a short comeback to " + msg }
         ]
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
-
 
 def get_ted_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
             {"role": "system", "content": "You are coach Ted Lasso" + get_conditional_prompts()},
-            {"role": "user", "content": "write a short response to " + msg}
+            {"role": "user", "content": "write a short response to " + msg }
         ]
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
-
-
-def reword_response(msg):
-    personality = get_personality()
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
-        messages=[
-            {"role": "system", "content": "You are a " + personality + get_conditional_prompts()},
-            {"role": "user", "content": "reword this: " + msg}
-        ]
-    )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
-
 
 def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system",
-             "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts()},
-            {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg}
+            {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts()},
+            {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
         ]
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
-
 
 def get_bot_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system",
-             "content": "Your name is WanBot and you are an funny, clever, slightly sarcastic robot that lives inside a discord server where friends chat about video games, movies, television, music, parenthood, religion and politics" + get_conditional_prompts()},
-            {"role": "user", "content": "respond to someone saying " + msg}
+            {"role": "system", "content": "Your name is WanBot and you are an funny, clever, slightly sarcastic robot that lives inside a discord server where friends chat about video games, movies, television, music, parenthood, religion and politics" + get_conditional_prompts()},
+            {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
-
 
 async def kindness(message):
     try:
@@ -155,7 +131,6 @@ async def kindness(message):
 
     await quoted_msg.reply(msg)
 
-
 async def comeback(message):
     try:
         if is_blacklisted_channel(message.channel.name):
@@ -180,35 +155,6 @@ async def comeback(message):
 
     await quoted_msg.reply(msg)
 
-
-async def reword(message):
-    print('responding to ' + message.content)
-    try:
-        if is_blacklisted_channel(message.channel.name):
-            await message.add_reaction("🙅‍♀️")
-            return
-    except Exception as e:
-        print("error checking blacklist")
-        return
-
-    try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
-    except Exception as e:
-        print('error getting reword message')
-        await message.add_reaction("🤷")
-        return
-
-    try:
-        msg = reword_response(quoted_msg.content)
-    except Exception as e:
-        print("error getting ai reword response")
-        print(e)
-        await message.add_reaction("🤷")
-        return
-
-    await quoted_msg.reply(msg)
-
-
 async def ted(message):
     try:
         if is_blacklisted_channel(message.channel.name):
@@ -232,7 +178,6 @@ async def ted(message):
         msg = get_comeback(quoted_msg.content)
 
     await quoted_msg.reply(msg)
-
 
 async def bot_response(message):
     print('responding to ' + message.content)
