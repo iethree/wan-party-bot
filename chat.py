@@ -182,29 +182,28 @@ async def comeback(message):
 
 
 async def reword(message):
+    print("this should just fucking work")
     print('responding to ' + message.content)
     try:
         if is_blacklisted_channel(message.channel.name):
             await message.add_reaction("🙅‍♀️")
             return
     except Exception as e:
-        print("error checking blacklist")
-        return
+        print("error checking blacklist: ", e)
 
     try:
         quoted_msg = await message.channel.fetch_message(message.reference.message_id)
     except Exception as e:
-        print('error getting reword message')
+        print('error getting reword message:', e)
         await message.add_reaction("🤷")
         return
 
     try:
         msg = reword_response(quoted_msg.content)
     except Exception as e:
-        print("error getting ai reword response")
+        print("error getting ai reword response", e)
         print(e)
         await message.add_reaction("🤷")
-        return
 
     await quoted_msg.reply(msg)
 
