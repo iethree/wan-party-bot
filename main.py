@@ -10,7 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
-from chat import comeback, kindness, bot_response, ted
+from chat import comeback, kindness, bot_response, ted, reword
 import math
 
 initiate_tables()
@@ -34,6 +34,10 @@ async def on_message(message):
         return
 
     print(message.author.display_name + ": " + message.content)
+
+    if message.contents.startswith("/reword"):
+        await reword(message)
+        return
 
     if message.content.startswith("/quote"):
         await quote(message)
