@@ -103,7 +103,6 @@ async def respond_to(client, message):
     ]
 
     responses = [
-        ["joke", random_joke()],
         ["yoda", get_yoda_quote()],
         ['trombone', "https://twitter.com/JacobDJAtkinson/status/1572449169666703360"],
     ]
