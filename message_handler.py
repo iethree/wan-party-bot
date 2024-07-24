@@ -30,7 +30,7 @@ STATIC_REACTIONS = [
         lambda c, m: sometimes(0.05) and "local_oaf" in m.author.display_name.lower(), "🚂"
     ),
     MatchingReaction(
-        lambda c, m: did_u_say_wanbot.search(c) is not None, "💅"
+        lambda c, m: did_u_say_wanbot.search(c) is not None, "💁‍♀️"
     ),
 ]
 
