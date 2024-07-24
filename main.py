@@ -51,7 +51,7 @@ async def on_message(message):
         await ted(message)
         return
 
-    if str(client.user.id) in message.content or message.channel.name == "DM":
+    if str(client.user.id) in message.content or isinstance(message.channel, discord.channel.DMChannel):
         await bot_response(message)
         return
 
