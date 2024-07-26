@@ -106,6 +106,17 @@ def get_bot_response(msg):
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
+def get_person_response(personality, msg):
+    completion = ai_client.chat.completions.create(
+        model=gpt_model,
+        messages=[
+            {"role": "system", "content": "Your are " + personality},
+            {"role": "user", "content": "respond to someone saying " + msg }
+        ]
+    )
+    print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
+
 async def kindness(message):
     try:
         if is_blacklisted_channel(message.channel.name):
@@ -152,6 +163,30 @@ async def comeback(message):
         print("error getting ai comeback")
         print(e)
         msg = get_comeback(quoted_msg.content)
+
+    await quoted_msg.reply(msg)
+
+async def respond_as(message, personality = "master yoda from star wars"):
+    try:
+        if is_blacklisted_channel(message.channel.name):
+            await message.add_reaction("🙅‍♀️")
+            return
+    except Exception as e:
+        print("error checking blacklist")
+
+    try:
+        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
+    except Exception as e:
+        print('error getting comeback message')
+        await message.add_reaction("🤷")
+        return
+
+    try:
+        msg = get_person_response(personality, quoted_msg.content)
+    except Exception as e:
+        print("error getting ai comeback")
+        print(e)
+        await message.add_reaction("🫣")
 
     await quoted_msg.reply(msg)
 

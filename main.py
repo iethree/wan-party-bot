@@ -10,7 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
-from chat import comeback, kindness, bot_response, ted
+from chat import comeback, bot_response, respond_as
 import math
 
 initiate_tables()
@@ -43,8 +43,9 @@ async def on_message(message):
         await comeback(message)
         return
 
-    if message.content.startswith("/kindness"):
-        await kindness(message)
+    if message.content.startswith("/as"):
+        personality = message.content.replace("/as", "").strip()
+        await respond_as(message, personality)
         return
 
     if message.content.startswith("/ted"):
