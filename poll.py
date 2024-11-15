@@ -6,8 +6,6 @@ import datetime
 from emoji import is_emoji
 from message_handler import get_emoji
 
-print("poll.py")
-
 test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
@@ -47,7 +45,7 @@ async def on_ready():
     print("we have logged in as {0.user}".format(client))
     # await tree.sync()
 
-    channel = client.get_channel(test_channel_id)
+    channel = client.get_channel(schedule_channel_id)
     poll = discord.Poll(
         question="🎮 What to play on Sunday? 🎮",
         duration=datetime.timedelta(days=3),
