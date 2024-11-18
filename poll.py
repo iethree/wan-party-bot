@@ -11,12 +11,12 @@ schedule_channel_id=491257084650717195
 
 options = [ # only top 10 options will be added to the poll
   ["Abiotic Factor", "🧑‍🔬"],
+  ["Overwatch 2 (classic mode)", "overwatch"],
   ["Deep Rock Galactic", "dwarf"],
   ["Helldivers 2", "helldivers"],
   ["Gunfire Reborn", "🇨🇳"],
   ["Risk of Rain 2",  "🌧️"],
   ["Rocket League", "rocket_league"],
-  ["Overwatch 2", "overwatch"],
   ["Warhammer 40k Darktide", "🔨"],
   ["Warhammer Vermintide 2", "🐀"],
   ["Lethal Company", "🏢"],
