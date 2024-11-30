@@ -9,10 +9,12 @@ from message_handler import get_emoji
 test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
-options = [ # only top 10 options will be added to the poll
+options = [ # only top 5 options will be added to the poll
+  ["Void Crew", "🚀"]
   ["Abiotic Factor", "🧑‍🔬"],
-  ["Overwatch 2 (classic mode)", "overwatch"],
   ["Deep Rock Galactic", "dwarf"],
+  ["Overwatch 2 (classic mode)", "overwatch"],
+  ["Fortnite", "fortnite"],
   ["Helldivers 2", "helldivers"],
   ["Gunfire Reborn", "🇨🇳"],
   ["Risk of Rain 2",  "🌧️"],
@@ -22,7 +24,6 @@ options = [ # only top 10 options will be added to the poll
   ["Lethal Company", "🏢"],
   ["Halo 2", "halo2"],
   ["Splitgate", "splitgate"],
-  ["Fornite", "fortnite"],
   ["Titanfall 2", "🤖"],
   ["Counter Strike 2", "🔫"],
   ["Streets of Rogue", "🛣️"],
@@ -61,7 +62,7 @@ async def on_ready():
         except Exception as e:
           return "🙃"
 
-    for option in options[:10]:
+    for option in options[:5]:
       poll.add_answer(text=option[0], emoji=emoji(option[1]))
 
     await channel.send(poll=poll)
