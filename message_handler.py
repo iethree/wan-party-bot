@@ -37,7 +37,10 @@ STATIC_REACTIONS = [
           "wow",
           "factorio",
           "the last of us",
-          "overwatch"
+          "overwatch",
+          "facts",
+          "objective",
+          "correct"
       ], m.content.lower()), "🙄"
     ),
     MatchingReaction(
