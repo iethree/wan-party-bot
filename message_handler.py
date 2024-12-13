@@ -15,19 +15,30 @@ def sometimes(chance):
 
 did_u_say_wanbot = re.compile(r"\bw[\w*]{0,3}n.{0,2}[8b][\w*]{0,3}[ty]\b")
 
+def did_u_say_the_magic_word(words, message):
+    random.shuffle(words)
+    return any(word in message for word in words)
+
 STATIC_REACTIONS = [
     Reaction("poop", "💩"),
     Reaction(["drg", "dwarf"], ["🪨", "🥌"]),  # rock and stone
     Reaction("ps5", "👎"),
     Reaction("how you doin bot?", "👍"),
     MatchingReaction(
-        lambda c, m: sometimes(0.02) and "shplay" in m.author.display_name.lower(), "🙄"
-    ),
-    MatchingReaction(
-        lambda c, m: sometimes(0.1) and "waluigi" in m.author.display_name.lower(), "❤️"
-    ),
-    MatchingReaction(
-        lambda c, m: sometimes(0.05) and "local_oaf" in m.author.display_name.lower(), "🚂"
+      lambda c, m: sometimes(0.2) and did_u_say_the_magic_word([
+          "opinion",
+          "take",
+          "ps5",
+          "valve",
+          "steam deck",
+          "harry potter",
+          "dune",
+          "star wars",
+          "wow",
+          "factorio",
+          "the last of us",
+          "overwatch"
+      ], m.content.lower()), "🙄"
     ),
     MatchingReaction(
         lambda c, m: did_u_say_wanbot.search(c) is not None, "💁‍♀️"
