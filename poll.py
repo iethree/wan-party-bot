@@ -88,6 +88,6 @@ def hours_left():
     time_difference = next_sunday_6pm - now
     hours_remaining = time_difference.total_seconds() / 3600
 
-    utc_offset = -7 # adjust for DST
+    utc_offset = 7 # adjust for DST
 
     return math.floor(hours_remaining) + utc_offset
