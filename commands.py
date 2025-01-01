@@ -4,6 +4,7 @@ from dick import *
 from sing import *
 from giphy import *
 from thinking import thinking
+from poll import poll, hours_left
 from leaderboards import get_leaderboards
 import random
 from client import client
@@ -535,9 +536,12 @@ def beg_mercy(user_id):
 
 
 @tree.command()
-async def game_poll(interaction):
-    poll_text = open("./weekly_games_poll.txt", encoding="utf8").read()
-    await interaction.response.send_message(poll_text)
+async def game_poll(interaction, hours: str = None):
+    if hours is None:
+        hours = hours_left()
+
+    await poll(hours)
+    await interaction.response.send_message("✅", ephemeral=True)
 
 
 @tree.command()
@@ -595,7 +599,6 @@ async def sayquote(interaction):
         return
 
     await interaction.response.send_message(f"{q[1]} --<@{q[0]}>")
-
 
 @tree.command()
 async def quotestats(interaction):
