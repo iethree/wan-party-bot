@@ -108,6 +108,10 @@ async def respond_to(client, message):
             get_emoji(message.guild, "wow"),
         ),
         MatchingReaction(
+            lambda c, m: "local_oaf" in m.author.name.lower() and sometimes(0.05),
+            "😇"
+        ),
+        MatchingReaction(
             lambda c, m: "shplay" in m.author.display_name.lower() and (date.today().strftime("%m-%d") == "04-20"),
             get_emoji(message.guild, "420shplaybday"),
         ),
