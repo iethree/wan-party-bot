@@ -23,6 +23,7 @@ STATIC_REACTIONS = [
     Reaction("poop", "💩"),
     Reaction(["drg", "dwarf"], ["🪨", "🥌"]),  # rock and stone
     Reaction("ps5", "👎"),
+    Reaction("dongle", "🍆"),
     Reaction("how you doin bot?", "👍"),
     MatchingReaction(
       lambda c, m: sometimes(0.2) and did_u_say_the_magic_word([
