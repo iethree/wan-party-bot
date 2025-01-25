@@ -12,10 +12,11 @@ schedule_channel_id=491257084650717195
 
 options = [ # only top 5 options will be added to the poll
   ["Void Crew", "🚀"],
-  ["Abiotic Factor", "🧑‍🔬"],
   ["Deep Rock Galactic", "dwarf"],
   ["Marvel Rivals", "🦸"],
   ["Helldivers 2", "helldivers"],
+  ["MageQuit", "🧙"],
+  ["Abiotic Factor", "🧑‍🔬"],
   ["Gunfire Reborn", "🇨🇳"],
   ["Overwatch 2", "overwatch"],
   ["Fortnite", "fortnite"],
