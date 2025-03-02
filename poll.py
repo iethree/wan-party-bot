@@ -11,10 +11,12 @@ test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
 options = [ # only top 5 options will be added to the poll
+  ["Helldivers 2", "helldivers"],
   ["Void Crew", "🚀"],
   ["Deep Rock Galactic", "dwarf"],
+  ["Sea of Thieves", "sea_of_thieves"],
+  ["Splitgate 2", "splitgate"],
   ["Marvel Rivals", "🦸"],
-  ["Helldivers 2", "helldivers"],
   ["MageQuit", "🧙"],
   ["Abiotic Factor", "🧑‍🔬"],
   ["Gunfire Reborn", "🇨🇳"],
@@ -27,7 +29,6 @@ options = [ # only top 5 options will be added to the poll
   ["Warhammer Vermintide 2", "🐀"],
   ["Lethal Company", "🏢"],
   ["Halo 2", "halo2"],
-  ["Splitgate", "splitgate"],
   ["Titanfall 2", "🤖"],
   ["Counter Strike 2", "🔫"],
   ["Streets of Rogue", "🛣️"],
@@ -65,7 +66,7 @@ async def poll(hours = 50):
         except Exception as e:
           return "🙃"
 
-    for option in options[:5]:
+    for option in options[:8]:
       game_poll.add_answer(text=option[0], emoji=emoji(option[1]))
 
     await channel.send(poll=game_poll)
