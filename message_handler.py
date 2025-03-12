@@ -109,6 +109,10 @@ async def respond_to(client, message):
             get_emoji(message.guild, "wow"),
         ),
         MatchingReaction(
+            lambda c, m: "tsm" in m.author.display_name.lower(),
+            get_emoji(message.guild, "neato"),
+        ),
+        MatchingReaction(
             lambda c, m: "local_oaf" in m.author.name.lower() and sometimes(0.05),
             "😇"
         ),

@@ -12,6 +12,7 @@ from commands import tree
 from quote import quote
 from chat import comeback, bot_response, respond_as
 import math
+from blacklist import is_blacklisted_channel
 
 initiate_tables()
 
@@ -63,6 +64,9 @@ async def on_message(message):
         return
 
     # await client.process_commands(message)
+
+    if is_blacklisted_channel(message.channel.name):
+        return
 
     response = await mh.respond_to(client, message)
 
