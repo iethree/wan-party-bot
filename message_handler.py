@@ -113,7 +113,7 @@ async def respond_to(client, message):
             get_emoji(message.guild, "neato"),
         ),
         MatchingReaction(
-            lambda c, m: "local_oaf" in m.author.name.lower() and sometimes(0.05),
+            lambda c, m: "local_oaf" in m.author.name.lower() and sometimes(0.02),
             get_emoji(message.guild, "elon"),
         ),
         MatchingReaction(
