@@ -5,7 +5,7 @@ from datetime import date
 ai_client = OpenAI()
 
 
-gpt_model = "gpt-4o-mini"
+gpt_model = "gpt-4.1-nano"
 
 personalities = [
     "sarcastic wise-cracking stand up comedian",
