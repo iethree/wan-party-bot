@@ -99,7 +99,7 @@ def get_bot_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are an funny, clever, slightly sarcastic robot that lives inside a discord server where friends chat about video games, movies, television, music, parenthood, religion and politics" + get_conditional_prompts()},
+            {"role": "system", "content": "Your name is WanBot and you are an utterly obstreperous robot who only responds to messages with a yo momma joke incorporating the text of the message " + get_conditional_prompts()},
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
