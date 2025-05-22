@@ -10,27 +10,30 @@ from message_handler import get_emoji
 test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
-options = [ # only top 5 options will be added to the poll
+# only this many options will be added to the poll
+MAX_OPTIONS = 8
+
+options = [
   ["Helldivers 2", "helldivers"],
-  ["Void Crew", "🚀"],
   ["Deep Rock Galactic", "dwarf"],
-  ["Sea of Thieves", "sea_of_thieves"],
   ["Marvel Rivals", "🦸"],
+  ["Warhammer 40k Darktide", "🔨"],
+  ["Overwatch 2", "overwatch"],
+  ["Titanfall 2", "🤖"],
+  ["Halo 2", "halo2"],
+  ["Gunfire Reborn", "🇨🇳"],
+  ["Rocket League", "rocket_league"],
+  ["Risk of Rain 2",  "🌧️"],
+  ["Sea of Thieves", "sea_of_thieves"],
+  ["Void Crew", "🚀"],
   ["Killer Queen Black", "killerqueen"],
   ["Abiotic Factor", "🧑‍🔬"],
   ["MageQuit", "🧙"],
-  ["Gunfire Reborn", "🇨🇳"],
-  ["Overwatch 2", "overwatch"],
   ["Fortnite", "fortnite"],
   ["LOTR: Return to Moria", "⛏️"],
-  ["Risk of Rain 2",  "🌧️"],
   ["Splitgate 2", "splitgate"],
-  ["Rocket League", "rocket_league"],
-  ["Warhammer 40k Darktide", "🔨"],
   ["Warhammer Vermintide 2", "🐀"],
   ["Lethal Company", "🏢"],
-  ["Halo 2", "halo2"],
-  ["Titanfall 2", "🤖"],
   ["Counter Strike 2", "🔫"],
   ["Streets of Rogue", "🛣️"],
   ["Fall Guys", "fallguys"],
@@ -40,7 +43,7 @@ options = [ # only top 5 options will be added to the poll
   ["Rounds", "🔴"],
   ["Core Keeper", "🔵"],
   ["Super Smash Bros Ultimate", "🥊"],
-  ["MarioKart 7 Deluxe", "🏎️"],
+  ["MarioKart 8 Deluxe", "🏎️"],
   ["Age of Empires 2", "🏰"],
   ["Starcraft 2", "starcraft"],
   ["Among Us", "amongus"],
@@ -67,7 +70,7 @@ async def poll(hours = 50):
         except Exception as e:
           return "🙃"
 
-    for option in options[:8]:
+    for option in options[:MAX_OPTIONS]:
       game_poll.add_answer(text=option[0], emoji=emoji(option[1]))
 
     await channel.send(poll=game_poll)
