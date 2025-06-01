@@ -16,7 +16,7 @@ MAX_OPTIONS = 8
 options = [
   ["Helldivers 2", "helldivers"],
   ["Warhammer 40k Darktide", "🔨"],
-  ["Tiny Tina's Wonderlands, "🤪"],
+  ["Tiny Tina's Wonderlands", "🤪"],
   ["Deep Rock Galactic", "dwarf"],
   ["Marvel Rivals", "🦸"],
   ["Overwatch 2", "overwatch"],
