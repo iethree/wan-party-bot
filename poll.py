@@ -15,15 +15,16 @@ MAX_OPTIONS = 8
 
 options = [
   ["Helldivers 2", "helldivers"],
+  ["Warhammer 40k Darktide", "🔨"],
+  ["Tiny Tina's Wonderlands, "🤪"],
   ["Deep Rock Galactic", "dwarf"],
   ["Marvel Rivals", "🦸"],
-  ["Warhammer 40k Darktide", "🔨"],
   ["Overwatch 2", "overwatch"],
   ["Titanfall 2", "🤖"],
-  ["Halo 2", "halo2"],
   ["Gunfire Reborn", "🇨🇳"],
   ["Rocket League", "rocket_league"],
   ["Risk of Rain 2",  "🌧️"],
+  ["Halo 2", "halo2"],
   ["Sea of Thieves", "sea_of_thieves"],
   ["Void Crew", "🚀"],
   ["Killer Queen Black", "killerqueen"],
