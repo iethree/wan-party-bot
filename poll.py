@@ -14,6 +14,7 @@ schedule_channel_id=491257084650717195
 MAX_OPTIONS = 8
 
 options = [
+  ["Jump Ship", "🚀"],
   ["Helldivers 2", "helldivers"],
   ["Warhammer 40k Darktide", "🔨"],
   ["Tiny Tina's Wonderlands", "🤪"],
