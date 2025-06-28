@@ -11,12 +11,14 @@ test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
 # only this many options will be added to the poll
-MAX_OPTIONS = 8
+MAX_OPTIONS = 6
 
 options = [
-  ["Jump Ship", "🚀"],
   ["Rematch", "⚽"],
+  ["Peak", "⛰️"],
   ["Helldivers 2", "helldivers"],
+  ["Jump Ship", "🚀"],
+  ["Mario Kart World", "mariokart"],
   ["Warhammer 40k Darktide", "🔨"],
   ["Deep Rock Galactic", "dwarf"],
   ["Marvel Rivals", "🦸"],
