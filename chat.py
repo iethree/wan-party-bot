@@ -119,6 +119,7 @@ def get_bot_response(msg):
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
+    add_to_context(msg)
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
