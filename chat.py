@@ -36,6 +36,21 @@ conditional_prompts = [
     }
 ]
 
+context_buffer_size = 5
+context_buffer = []
+
+def add_to_context(msg):
+    """
+    Add a message to the context buffer, maintaining a maximum size.
+    If the buffer exceeds the size limit, remove the oldest message.
+    """
+    context_buffer.append({
+        "role": "user",
+        "content": msg
+    })
+    if len(context_buffer) > context_buffer_size:
+        context_buffer.pop(0)
+
 # a less lazy dev might pass in the message object and change the condition entries into lambdas that can be called
 # with the msg to craft responses tailored to the person responding, or specific words in their message
 def get_conditional_prompts():
@@ -100,6 +115,7 @@ def get_bot_response(msg):
         model=gpt_model,
         messages=[
             {"role": "system", "content": "Your name is WanBot and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness " + get_conditional_prompts()},
+            *context_buffer,
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
