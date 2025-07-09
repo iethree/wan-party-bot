@@ -36,16 +36,16 @@ conditional_prompts = [
     }
 ]
 
-context_buffer_size = 5
+context_buffer_size = 10
 context_buffer = []
 
-def add_to_context(msg):
+def add_to_context(role, msg):
     """
     Add a message to the context buffer, maintaining a maximum size.
     If the buffer exceeds the size limit, remove the oldest message.
     """
     context_buffer.append({
-        "role": "user",
+        "role": role,
         "content": msg
     })
     if len(context_buffer) > context_buffer_size:
@@ -119,9 +119,12 @@ def get_bot_response(msg):
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
-    add_to_context(msg)
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    add_to_context("user", msg)
+    response = completion.choices[0].message.content
+    add_to_context("assistant", response)
+
+    print(response)
+    return response
 
 def get_person_response(personality, msg):
     completion = ai_client.chat.completions.create(
