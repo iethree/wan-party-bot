@@ -116,11 +116,11 @@ def get_bot_response(msg):
         messages=[
             {"role": "system", "content": "Your name is WanBot and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness " + get_conditional_prompts()},
             *context_buffer,
-            {"role": "user", "content": "respond to someone saying " + msg }
+            {"role": "user", "content": msg }
         ]
     )
-    add_to_context("user", msg)
     response = completion.choices[0].message.content
+    add_to_context("user", msg)
     add_to_context("assistant", response)
 
     print(response)
