@@ -14,13 +14,13 @@ schedule_channel_id=491257084650717195
 MAX_OPTIONS = 6
 
 options = [
+  ["Halo 2", "halo2"],
   ["Peak", "⛰️"],
   ["Helldivers 2", "helldivers"],
   ["Mario Kart World", "mariokart"],
   ["Abiotic Factor", "🧑‍🔬"],
-  ["Sea of Thieves", "sea_of_thieves"],
   ["Deep Rock Galactic", "dwarf"],
-  ["Halo 2", "halo2"],
+  ["Sea of Thieves", "sea_of_thieves"],
   ["Jump Ship", "🚀"],
   ["Warhammer 40k Darktide", "🔨"],
   ["Rematch", "⚽"],
