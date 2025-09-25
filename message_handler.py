@@ -92,6 +92,10 @@ async def respond_to(client, message):
             return m.content
         return "hmmm"
 
+    today = date.today().strftime("%m-%d")
+    is_special = 614049 == sum(ord(s) * 10**o for (s,o) in zip(today, range(5)))
+    op = lambda m: m.author.display_name.lower()
+
     reactions = STATIC_REACTIONS + [
         Reaction("the way", get_emoji(message.guild, "mando")),
         Reaction("meta", get_emoji(message.guild, "meta")),
@@ -105,19 +109,23 @@ async def respond_to(client, message):
             get_emoji(message.guild, "thedeck"),
         ),
         MatchingReaction(
-            lambda c, m: "ryan" in m.author.display_name.lower() and ("wow" in c or "warcraft" in c),
+            lambda c, m: "ryan" in op(m) and ("wow" in c or "warcraft" in c),
             get_emoji(message.guild, "wow"),
         ),
         MatchingReaction(
-            lambda c, m: "tsm" in m.author.display_name.lower() and sometimes(0.05),
+            lambda c, m: "tsm" in op(m) and sometimes(0.05),
             get_emoji(message.guild, "neato"),
         ),
         MatchingReaction(
-            lambda c, m: "local_oaf" in m.author.name.lower() and sometimes(0.02),
+            lambda c, m: "local_oaf" in op(m) and sometimes(0.02),
             get_emoji(message.guild, "elon"),
         ),
         MatchingReaction(
-            lambda c, m: "shplay" in m.author.display_name.lower() and (date.today().strftime("%m-%d") == "04-20"),
+            lambda c, m: "".join(chr(ord(chrord) + len(str(range(0))) + len(str(dict())))  for chrord in "elTa") in op(m) and is_special,
+            get_emoji(message.guild, "wow"),
+        ),
+        MatchingReaction(
+            lambda c, m: "shplay" in op(m) and (today == "04-20"),
             get_emoji(message.guild, "420shplaybday"),
         ),
     ]
