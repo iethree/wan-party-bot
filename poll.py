@@ -11,23 +11,25 @@ test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
 # only this many options will be added to the poll
-MAX_OPTIONS = 6
+MAX_OPTIONS = 8
 
 options = [
+  ["Helldivers 2", "helldivers"],
+  ["Abiotic Factor", "🧑‍🔬"],
+  ["RV There Yet?", "🛞"],
+  ["Arc Raiders", "🌈"],
+  ["Halo 2", "halo2"],
+  ["Peak", "⛰️"],
+  ["Jump Ship", "🚀"],
+  ["Deep Rock Galactic", "dwarf"],
   ["Phasmophobia", "👻"],
+  ["Sea of Thieves", "sea_of_thieves"],
   ["Project Zomboid", "🧟"],
   ["Left 4 Dead 2", "🧟‍♀️"],
   ["Warhammer Vermintide 2", "🐀"],
   ["Warhammer 40k Darktide", "🔨"],
   ["Lethal Company", "🏢"],
-  ["Helldivers 2", "helldivers"],
-  ["Halo 2", "halo2"],
-  ["Abiotic Factor", "🧑‍🔬"],
-  ["Peak", "⛰️"],
   ["Mario Kart World", "mariokart"],
-  ["Deep Rock Galactic", "dwarf"],
-  ["Sea of Thieves", "sea_of_thieves"],
-  ["Jump Ship", "🚀"],
   ["Rematch", "⚽"],
   ["Marvel Rivals", "🦸"],
   ["Fortnite", "fortnite"],
