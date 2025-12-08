@@ -66,7 +66,7 @@ async def poll(hours = 50):
     channel = client.get_channel(schedule_channel_id)
 
     game_poll = discord.Poll(
-        question="🎮 What to play on Sunday? 🎮",
+        question="🎮 What to play on Tuesday? 🎮",
         duration=timedelta(hours = hours),
         multiple=True,
     )
@@ -90,18 +90,21 @@ def hours_left():
     # Get the current datetime
     now = datetime.now()
 
-    # Calculate the number of days until the next Sunday
-    days_until_sunday = (6 - now.weekday()) % 7
+    day = 2 # Tuesday
+    hour = 18 # 6 PM
 
-    # Determine the target Sunday at 6 PM
-    next_sunday_6pm = (now + timedelta(days=days_until_sunday)).replace(hour=18, minute=0, second=0, microsecond=0)
+    # Calculate the number of days until the next party
+    days_until_party = (day - now.weekday()) % 7
 
-    # If the target time has already passed today, move to the next Sunday
-    if next_sunday_6pm <= now:
-        next_sunday_6pm += timedelta(weeks=1)
+    # Determine the target day / time
+    next_party = (now + timedelta(days=days_until_party)).replace(hour=hour, minute=0, second=0, microsecond=0)
+
+    # If the target time has already passed today, move to the next party
+    if next_party <= now:
+        next_party += timedelta(weeks=1)
 
     # Calculate the time difference in hours
-    time_difference = next_sunday_6pm - now
+    time_difference = next_party - now
     hours_remaining = time_difference.total_seconds() / 3600
 
     utc_offset = 7 # adjust for DST
