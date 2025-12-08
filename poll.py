@@ -21,7 +21,7 @@ options = [
   ["Deep Rock Galactic", "dwarf"],
   ["Valheim", "⛺"],
   ["Warhammer Vermintide 2", "🐀"],
-  ["RV There Yet?", "🛞"],
+  ["RV There Yet?", "🚬"],
   # library below 👇
   ["Peak", "⛰️"],
   ["Helldivers 2", "helldivers"],
