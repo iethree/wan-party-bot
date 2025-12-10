@@ -92,7 +92,7 @@ def hours_left():
     # Get the current datetime
     now = datetime.now()
 
-    day = 2 # Tuesday
+    day = 1 # Tuesday
     hour = 18 # 6 PM
 
     # Calculate the number of days until the next party
