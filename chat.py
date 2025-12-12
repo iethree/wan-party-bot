@@ -2,11 +2,16 @@ import random
 from blacklist import is_blacklisted_channel
 from openai import OpenAI
 from datetime import date
+from client import client
 ai_client = OpenAI()
 
 gpt_model = "gpt-5-nano"\
 
-standard_personality = "Your name is WanBot and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
+def get_personality():
+    standard_personality = "Your name is WanBot, aka <@" + client.user +">, and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
+    conditional_personality = get_conditional_prompts()
+    return standard_personality + conditional_personality
+
 
 personalities = [
     "sarcastic wise-cracking stand up comedian",
@@ -36,6 +41,8 @@ conditional_prompts = [
         "condition": lambda: date.today().strftime("%m-%d") == "04-08"
     }
 ]
+
+limit_context = {"role": "system", "content": "responses absolutely cannot exceed 1800 characters" }
 
 context_buffer_size = 10
 context_buffer = []
@@ -82,7 +89,7 @@ def get_ai_comeback(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are a " + personality + get_conditional_prompts()},
+            {"role": "system", "content": get_personality()},
             {"role": "user", "content": "write a short comeback to " + msg }
         ]
     )
@@ -93,7 +100,7 @@ def get_tldr_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": standard_personality + get_conditional_prompts()},
+            {"role": "system", "content": get_personality()},
             {"role": "user", "content": "write an extremely short and mildly flippant tldr summary of: " + msg }
         ]
     )
@@ -114,9 +121,9 @@ def get_ai_kindness(msg):
 async def get_bot_response(message):
     msg = message.content
 
-
     messages = [
-        {"role": "system", "content": standard_personality + get_conditional_prompts()},
+        {"role": "system", "content": get_personality()},
+        limit_context,
         *context_buffer
     ]
 
@@ -160,7 +167,7 @@ async def kindness(message):
 
     quoted_msg = await get_quoted_msg(message)
 
-    if: quoted_msg is None:
+    if quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -184,7 +191,7 @@ async def comeback(message):
 
     quoted_msg = await get_quoted_msg(message)
 
-    if: quoted_msg is None:
+    if quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -207,7 +214,7 @@ async def respond_as(message, personality = "master yoda from star wars"):
 
     quoted_msg = await get_quoted_msg(message)
 
-    if: quoted_msg is None:
+    if quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -231,11 +238,11 @@ async def tldr(message):
     try:
         quoted_msg = await get_quoted_msg(message)
     except Exception as e:
-        print('error getting comeback message')
         await message.add_reaction("🤷")
         return
 
     try:
+        await think(message)
         msg = get_tldr_response(quoted_msg.content)
     except Exception as e:
         print("error getting ai tldr response")
@@ -243,6 +250,7 @@ async def tldr(message):
         msg = get_comeback(quoted_msg.content)
 
     await quoted_msg.reply(msg)
+    await unthink(message)
 
 async def bot_response(message):
     print('responding to ' + message.content)
@@ -254,7 +262,9 @@ async def bot_response(message):
         print("error checking blacklist")
 
     try:
+        await think(message)
         msg = await get_bot_response(message)
+        await unthink(message)
     except Exception as e:
         print("error getting ai bot response")
         print(e)
@@ -263,7 +273,6 @@ async def bot_response(message):
 
     await message.reply(msg)
 
-
 async def get_quoted_msg(message):
     try:
         quoted_msg = await message.channel.fetch_message(message.reference.message_id)
@@ -271,3 +280,10 @@ async def get_quoted_msg(message):
     except Exception as e:
         print('error getting quoted message')
         return None
+
+
+async def think(msg):
+    await msg.add_reaction("🤔")
+
+async def unthink(msg):
+    await msg.remove_reaction("🤔", client.user)
