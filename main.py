@@ -10,7 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
-from chat import comeback, bot_response, respond_as
+from chat import comeback, bot_response, respond_as, tldr
 import math
 from blacklist import is_blacklisted_channel
 
