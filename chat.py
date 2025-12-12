@@ -4,8 +4,9 @@ from openai import OpenAI
 from datetime import date
 ai_client = OpenAI()
 
+gpt_model = "gpt-5-nano"\
 
-gpt_model = "gpt-4.1-nano"
+standard_personality = "Your name is WanBot and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
 
 personalities = [
     "sarcastic wise-cracking stand up comedian",
@@ -88,12 +89,12 @@ def get_ai_comeback(msg):
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
-def get_ted_response(msg):
+def get_tldr_response(msg):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
-            {"role": "system", "content": "You are coach Ted Lasso" + get_conditional_prompts()},
-            {"role": "user", "content": "write a short response to " + msg }
+            {"role": "system", "content": standard_personality + get_conditional_prompts()},
+            {"role": "user", "content": "write an extremely short and mildly flippant tldr summary of: " + msg }
         ]
     )
     print(completion.choices[0].message.content)
@@ -110,14 +111,26 @@ def get_ai_kindness(msg):
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
-def get_bot_response(msg):
+async def get_bot_response(message):
+    msg = message.content
+
+
+    messages = [
+        {"role": "system", "content": standard_personality + get_conditional_prompts()},
+        *context_buffer
+    ]
+
+    messages.append({"role": "user", "content": msg})
+
+    quoted_msg = await get_quoted_msg(message)
+    quoted_context = {"role": "user", "content": "the previous message is responding to: " + quoted_msg.content} if quoted_msg is not None else None
+
+    if quoted_context is not None:
+        messages.append(quoted_context)
+
     completion = ai_client.chat.completions.create(
         model=gpt_model,
-        messages=[
-            {"role": "system", "content": "Your name is WanBot and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness " + get_conditional_prompts()},
-            *context_buffer,
-            {"role": "user", "content": msg }
-        ]
+        messages=messages
     )
     response = completion.choices[0].message.content
     add_to_context("user", msg)
@@ -145,10 +158,9 @@ async def kindness(message):
     except Exception as e:
         print("error checking blacklist")
 
-    try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
-    except Exception as e:
-        print('error getting kindness message')
+    quoted_msg = await get_quoted_msg(message)
+
+    if: quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -170,10 +182,9 @@ async def comeback(message):
     except Exception as e:
         print("error checking blacklist")
 
-    try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
-    except Exception as e:
-        print('error getting comeback message')
+    quoted_msg = await get_quoted_msg(message)
+
+    if: quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -194,10 +205,9 @@ async def respond_as(message, personality = "master yoda from star wars"):
     except Exception as e:
         print("error checking blacklist")
 
-    try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
-    except Exception as e:
-        print('error getting comeback message')
+    quoted_msg = await get_quoted_msg(message)
+
+    if: quoted_msg is None:
         await message.add_reaction("🤷")
         return
 
@@ -210,7 +220,7 @@ async def respond_as(message, personality = "master yoda from star wars"):
 
     await quoted_msg.reply(msg)
 
-async def ted(message):
+async def tldr(message):
     try:
         if is_blacklisted_channel(message.channel.name):
             await message.add_reaction("🙅‍♀️")
@@ -219,16 +229,16 @@ async def ted(message):
         print("error checking blacklist")
 
     try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
+        quoted_msg = await get_quoted_msg(message)
     except Exception as e:
         print('error getting comeback message')
         await message.add_reaction("🤷")
         return
 
     try:
-        msg = get_ted_response(quoted_msg.content)
+        msg = get_tldr_response(quoted_msg.content)
     except Exception as e:
-        print("error getting ai ted response")
+        print("error getting ai tldr response")
         print(e)
         msg = get_comeback(quoted_msg.content)
 
@@ -244,7 +254,7 @@ async def bot_response(message):
         print("error checking blacklist")
 
     try:
-        msg = get_bot_response(message.content)
+        msg = await get_bot_response(message)
     except Exception as e:
         print("error getting ai bot response")
         print(e)
@@ -252,3 +262,12 @@ async def bot_response(message):
         return
 
     await message.reply(msg)
+
+
+async def get_quoted_msg(message):
+    try:
+        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
+        return quoted_msg
+    except Exception as e:
+        print('error getting quoted message')
+        return None

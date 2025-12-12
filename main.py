@@ -49,8 +49,8 @@ async def on_message(message):
         await respond_as(message, personality)
         return
 
-    if message.content.startswith("/ted"):
-        await ted(message)
+    if message.content.startswith("/tldr"):
+        await tldr(message)
         return
 
     if str(client.user.id) in message.content or isinstance(message.channel, discord.channel.DMChannel):
