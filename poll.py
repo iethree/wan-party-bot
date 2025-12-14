@@ -11,7 +11,7 @@ test_channel_id=1307019075700002913
 schedule_channel_id=491257084650717195
 
 # only this many options will be added to the poll
-MAX_OPTIONS = 8
+MAX_OPTIONS = 10
 
 options = [
   ["Splitgate", "splitgate"],
@@ -22,6 +22,8 @@ options = [
   ["Valheim", "⛺"],
   ["Warhammer Vermintide 2", "🐀"],
   ["RV There Yet?", "🚬"],
+  ["Age of Empires 2", "🏰"],
+  ["Something else", "❓"],
   # library below 👇
   ["Peak", "⛰️"],
   ["Helldivers 2", "helldivers"],
@@ -93,7 +95,7 @@ def hours_left():
     now = datetime.now()
 
     day = 1 # Tuesday
-    hour = 18 # 6 PM
+    hour = 17 # 5 PM
 
     # Calculate the number of days until the next party
     days_until_party = (day - now.weekday()) % 7
