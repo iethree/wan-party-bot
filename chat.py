@@ -96,16 +96,23 @@ def get_ai_comeback(msg):
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
 
-def get_tldr_response(msg):
+def get_summary_response(text_to_summarize, prompt_instruction):
     completion = ai_client.chat.completions.create(
         model=gpt_model,
         messages=[
             {"role": "system", "content": get_personality()},
-            {"role": "user", "content": "write an extremely short and mildly flippant tldr summary of: " + msg }
-        ]
+            {"role": "user", "content": prompt_instruction + text_to_summarize},
+        ],
     )
     print(completion.choices[0].message.content)
     return completion.choices[0].message.content
+
+
+def get_tldr_response(msg):
+    return get_summary_response(
+        msg, "write an extremely short and mildly flippant tldr summary of: "
+    )
+
 
 def get_ai_kindness(msg):
     completion = ai_client.chat.completions.create(
@@ -272,6 +279,20 @@ async def bot_response(message):
         return
 
     await message.reply(msg)
+
+async def summarize_history(messages):
+    chat_log = "\n".join(
+        [
+            f"[{msg.created_at.isoformat()}] {msg.author.display_name}: {msg.content}"
+            for msg in messages
+        ]
+    )
+
+    return get_summary_response(
+        chat_log,
+        "summarize the following conversation from the last 48 hours. When you refer to individuals, use their display names: ",
+    )
+
 
 async def get_quoted_msg(message):
     try:
