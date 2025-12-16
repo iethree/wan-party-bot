@@ -8,6 +8,8 @@ from poll import poll, hours_left
 from leaderboards import get_leaderboards
 import random
 from client import client
+from summarize import summarize_channel
+
 
 import re
 from get_error_message import (
@@ -764,3 +766,10 @@ async def die(interaction):
 async def discipline_ryan(interaction):
     await interaction.response.send_message(f"No! Bad Ryan! Bad!")
     await interaction.response.send_message("https://imgur.com/a/21iBAu0")
+
+@tree.command()
+async def summarize(interaction):
+    """Summarizes the last 48 hours of conversation in this channel."""
+    await interaction.response.defer()
+    summary = await summarize_channel(interaction.channel)
+    await interaction.followup.send(summary)
