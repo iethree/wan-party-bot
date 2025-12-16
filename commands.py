@@ -6,10 +6,8 @@ from giphy import *
 from thinking import thinking
 from poll import poll, hours_left
 from leaderboards import get_leaderboards
-from chat import summarize_history
 import random
 from client import client
-
 
 import re
 from get_error_message import (
@@ -760,28 +758,6 @@ async def seppuku(interaction):
 @tree.command()
 async def die(interaction):
     await interaction.response.send_message("https://giphy.com/gifs/KRY2oGS7SPvO0")
-
-
-@tree.command()
-async def summarize(interaction):
-    """Summarizes the last 48 hours of messages in this channel."""
-    await interaction.response.defer(thinking=True)
-    try:
-        since = datetime.now() - timedelta(hours=48)
-        messages = []
-        async for message in interaction.channel.history(after=since):
-            messages.append(message)
-
-        if not messages:
-            await interaction.followup.send("No messages in the last 48 hours to summarize.")
-            return
-
-        summary = await summarize_history(messages)
-        await interaction.followup.send(summary)
-
-    except Exception as e:
-        print(f"Error during summarize command: {e}")
-        await interaction.followup.send("I tried to summarize, but I failed. I'm so sorry.")
 
 
 @tree.command()
