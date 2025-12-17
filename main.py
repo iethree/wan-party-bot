@@ -10,7 +10,7 @@ from sing import *
 from client import client
 from commands import tree
 from quote import quote
-from chat import comeback, bot_response, respond_as, tldr
+from chat import comeback, bot_response, respond_as, tldr, recap
 import math
 from blacklist import is_blacklisted_channel
 
@@ -51,6 +51,10 @@ async def on_message(message):
 
     if message.content.startswith("/tldr"):
         await tldr(message)
+        return
+
+    if message.content.startswith("/recap"):
+        await recap(message)
         return
 
     if str(client.user.id) in message.content or isinstance(message.channel, discord.channel.DMChannel):

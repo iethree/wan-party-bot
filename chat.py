@@ -1,7 +1,7 @@
 import random
 from blacklist import is_blacklisted_channel
 from openai import OpenAI
-from datetime import date
+from datetime import date, datetime, timedelta
 from client import client
 ai_client = OpenAI()
 
@@ -59,6 +59,37 @@ def add_to_context(role, msg):
     if len(context_buffer) > context_buffer_size:
         context_buffer.pop(0)
 
+def auto_split_messages(text, limit=2000):
+    messages = []
+    current_chunk = ""
+
+    # Split by paragraphs first
+    paragraphs = text.split('\n')
+
+    for paragraph in paragraphs:
+        # If adding this paragraph exceeds the limit
+        if len(current_chunk) + len(paragraph) + 1 > limit:
+            # If current_chunk is not empty, push it
+            if current_chunk:
+                messages.append(current_chunk.strip())
+                current_chunk = ""
+
+            # If the paragraph itself is longer than the limit, we must split it hard
+            if len(paragraph) > limit:
+                # If we just flushed current_chunk, we are ready to process this long paragraph
+                # We'll split it into chunks of 'limit' size
+                for i in range(0, len(paragraph), limit):
+                    messages.append(paragraph[i:i+limit])
+            else:
+                current_chunk = paragraph + "\n"
+        else:
+            current_chunk += paragraph + "\n"
+
+    if current_chunk:
+        messages.append(current_chunk.strip())
+
+    return messages
+
 # a less lazy dev might pass in the message object and change the condition entries into lambdas that can be called
 # with the msg to craft responses tailored to the person responding, or specific words in their message
 def get_conditional_prompts():
@@ -113,6 +144,20 @@ def get_ai_kindness(msg):
         messages=[
             {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts()},
             {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
+        ]
+    )
+    print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
+
+def get_ai_recap(username, messages_text):
+    system_prompt = "You are a peppy, energetic AI assistant that generates 'Year in Review' style recaps, similar to Spotify Wrapped or big tech annual summaries. Your tone should be enthusiastic, using emojis and corporate-friendly but fun language."
+    user_prompt = f"Here is a collection of discord messages from user '{username}' over the past year. Please generate a summary recap of what they have been talking about. Highlight key themes, recurring jokes, or specific interests. The recap MUST be less than 500 words. \n\nMessages:\n{messages_text}"
+
+    completion = ai_client.chat.completions.create(
+        model=gpt_model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt }
         ]
     )
     print(completion.choices[0].message.content)
@@ -226,6 +271,57 @@ async def respond_as(message, personality = "master yoda from star wars"):
         await message.add_reaction("🫣")
 
     await quoted_msg.reply(msg)
+
+async def recap(message):
+
+    try:
+        if is_blacklisted_channel(message.channel.name):
+            await message.add_reaction("🙅‍♀️")
+            return
+    except Exception as e:
+        print("error checking blacklist")
+
+    quoted_msg = await get_quoted_msg(message)
+
+    if quoted_msg is None:
+        await message.add_reaction("🤷")
+        return
+
+    target_user = quoted_msg.author
+    await think(message)
+
+    one_year_ago = datetime.now() - timedelta(days=365)
+    collected_messages = []
+
+    if message.guild:
+        for channel in message.guild.text_channels:
+            try:
+                async for msg in channel.history(limit=None, after=one_year_ago):
+                    if msg.author == target_user and msg.content:
+                        collected_messages.append(msg.content)
+            except Exception as e:
+                print(f"Error reading channel {channel.name}: {e}")
+                continue
+
+    if not collected_messages:
+        await unthink(message)
+        await message.reply(f"I couldn't find any messages from {target_user.display_name} in the past year.")
+        return
+
+    full_text = "\n".join(collected_messages)
+    if len(full_text) > 100000:
+        full_text = full_text[:100000]
+
+    try:
+        recap_response = get_ai_recap(target_user.display_name, full_text)
+        for chunk in auto_split_messages(recap_response):
+            await quoted_msg.reply(chunk)
+    except Exception as e:
+        print(f"Error generating recap: {e}")
+        await message.add_reaction("😵")
+
+    await unthink(message)
+
 
 async def tldr(message):
     try:
