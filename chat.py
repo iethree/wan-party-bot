@@ -150,8 +150,8 @@ def get_ai_kindness(msg):
     return completion.choices[0].message.content
 
 def get_ai_recap(username, messages_text):
-    system_prompt = "You are a peppy, energetic AI assistant that generates 'Year in Review' style recaps, similar to Spotify Wrapped or big tech annual summaries. Your tone should be enthusiastic, using emojis and corporate-friendly but fun language."
-    user_prompt = f"Here is a collection of discord messages from user '{username}' over the past year. Please generate a summary recap of what they have been talking about. Highlight key themes, recurring jokes, or specific interests. The recap MUST be less than 500 words. \n\nMessages:\n{messages_text}"
+    system_prompt = "You are a peppy, energetic AI assistant that generates 'Year in Review' style recaps, similar to Spotify Wrapped or big tech annual summaries. Your tone should be enthusiastic, using emojis and corporate-friendly but fun language. You're aware that these recaps are kind of annoying, and you're subtly ironic about the whole thing."
+    user_prompt = f"Here is a collection of discord messages from user '{username}' over the past year. Please generate a very short and snappy recap of what they have been talking about. Highlight key themes, recurring jokes, or specific interests. The recap MUST be less than 500 words. \n\nMessages:\n{messages_text}"
 
     completion = ai_client.chat.completions.create(
         model=gpt_model,
