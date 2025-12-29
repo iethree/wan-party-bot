@@ -6,6 +6,7 @@ import re
 import subprocess as sub
 import sys
 from datetime import date
+from chat import appropriate_reaction
 
 from dick import get_yoda_quote
 from reaction import *
@@ -26,7 +27,7 @@ STATIC_REACTIONS = [
     Reaction("dongle", "🍆"),
     Reaction("how you doin bot?", "👍"),
     MatchingReaction(
-      lambda c, m: sometimes(0.2) and did_u_say_the_magic_word([
+      lambda c, m: sometimes(0.1) and did_u_say_the_magic_word([
           "opinion",
           "take",
           "ps5",
@@ -113,11 +114,11 @@ async def respond_to(client, message):
             get_emoji(message.guild, "wow"),
         ),
         MatchingReaction(
-            lambda c, m: "tsm" in op(m) and sometimes(0.05),
+            lambda c, m: "tsm" in op(m) and sometimes(0.03),
             get_emoji(message.guild, "neato"),
         ),
         MatchingReaction(
-            lambda c, m: "local_oaf" in op(m) and sometimes(0.02),
+            lambda c, m: "local_oaf" in op(m) and sometimes(0.01),
             get_emoji(message.guild, "elon"),
         ),
         MatchingReaction(
@@ -145,3 +146,6 @@ async def respond_to(client, message):
         str_matches = isinstance(trigger, str) and trigger in content
         if re_matches or str_matches:
             await message.channel.send(response)
+
+    if sometimes(0.01):
+        await appropriate_reaction(message)

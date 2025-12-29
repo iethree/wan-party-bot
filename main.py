@@ -34,6 +34,9 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if is_blacklisted_channel(message.channel.name):
+        return
+
     print(message.author.display_name + ": " + message.content)
 
     if message.content.startswith("/quote"):
@@ -68,9 +71,6 @@ async def on_message(message):
         return
 
     # await client.process_commands(message)
-
-    if is_blacklisted_channel(message.channel.name):
-        return
 
     response = await mh.respond_to(client, message)
 

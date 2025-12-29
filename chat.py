@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from client import client
 ai_client = OpenAI()
 
-gpt_model = "gpt-5-nano"\
+gpt_model = "gpt-5-nano"
 
 def get_personality():
     standard_personality = "Your name is WanBot, aka <@" + client.user +">, and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
@@ -361,13 +361,15 @@ async def bot_response(message):
         await think(message)
         msg = await get_bot_response(message)
         await unthink(message)
+
+        for chunk in auto_split_messages(msg):
+            await message.reply(chunk)
     except Exception as e:
         print("error getting ai bot response")
         print(e)
         await message.add_reaction("🤷‍♀️")
         return
 
-    await message.reply(msg)
 
 async def get_quoted_msg(message):
     try:
@@ -383,3 +385,26 @@ async def think(msg):
 
 async def unthink(msg):
     await msg.remove_reaction("🤔", client.user)
+
+
+async def appropriate_reaction(message):
+    prompt = "choose a single emoji as a reaction to the following message: " + message.content
+
+    try:
+        print("getting ai reaction for message: " + message.content)
+        completion = ai_client.chat.completions.create(
+            model=gpt_model,
+            messages=[
+                {"role": "system", "content": get_personality()},
+                {"role": "system", "content": "Only respond with a single emoji character, nothing else." },
+                {"role": "user", "content": prompt }
+            ]
+        )
+
+        response = completion.choices[0].message.content.strip()
+        print("reacting with " + response)
+        await message.add_reaction(response)
+    except Exception as e:
+        print("error getting ai reaction")
+        print(e)
+        return
