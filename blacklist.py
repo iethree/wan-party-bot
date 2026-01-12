@@ -1,7 +1,7 @@
 blacklist = [
   "sigh-politics",
   "bible",
-  "anglicanism",
+  "wanglicanism",
   "formative movie crushes of the youthful era",
   "dads"
 ]
