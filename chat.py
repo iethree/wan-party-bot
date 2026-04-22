@@ -1,11 +1,18 @@
 import random
+import anthropic
 from blacklist import is_blacklisted_channel
-from openai import OpenAI
 from datetime import date, datetime, timedelta
 from client import client
-ai_client = OpenAI()
+ai_client = anthropic.Anthropic()
 
-gpt_model = "gpt-5-nano"
+model = "claude-haiku-4-5"
+max_tokens = 2048
+
+def _extract_text(response):
+    for block in response.content:
+        if block.type == "text":
+            return block.text
+    return ""
 
 def get_personality():
     standard_personality = "Your name is WanBot, aka <@" + client.user +">, and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
@@ -42,7 +49,7 @@ conditional_prompts = [
     }
 ]
 
-limit_context = {"role": "system", "content": "responses absolutely cannot exceed 1800 characters" }
+limit_context = "responses absolutely cannot exceed 1800 characters"
 
 context_buffer_size = 10
 context_buffer = []
@@ -117,90 +124,95 @@ def get_comeback(msg):
 def get_ai_comeback(msg):
     personality = get_personality()
     print("answering as a " + personality)
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system=get_personality(),
         messages=[
-            {"role": "system", "content": get_personality()},
             {"role": "user", "content": "write a short comeback to " + msg }
         ]
     )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    text = _extract_text(response)
+    print(text)
+    return text
 
 def get_tldr_response(msg):
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system=get_personality(),
         messages=[
-            {"role": "system", "content": get_personality()},
             {"role": "user", "content": "write an extremely short and mildly flippant tldr summary of: " + msg }
         ]
     )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    text = _extract_text(response)
+    print(text)
+    return text
 
 def get_ai_kindness(msg):
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system="Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts(),
         messages=[
-            {"role": "system", "content": "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient" + get_conditional_prompts()},
             {"role": "user", "content": "write a short bit of kind encouragement in response to " + msg }
         ]
     )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    text = _extract_text(response)
+    print(text)
+    return text
 
 def get_ai_recap(username, messages_text):
     system_prompt = "You are a peppy, energetic AI assistant that generates 'Year in Review' style recaps, similar to Spotify Wrapped or big tech annual summaries. Your tone should be enthusiastic, using emojis and corporate-friendly but fun language. You're aware that these recaps are kind of annoying, and you're subtly ironic about the whole thing."
     user_prompt = f"Here is a collection of discord messages from user '{username}' over the past year. Please generate a very short and snappy recap of what they have been talking about. Highlight key themes, recurring jokes, or specific interests. The recap MUST be less than 500 words. \n\nMessages:\n{messages_text}"
 
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system=system_prompt,
         messages=[
-            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt }
         ]
     )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    text = _extract_text(response)
+    print(text)
+    return text
 
 async def get_bot_response(message):
     msg = message.content
 
-    messages = [
-        {"role": "system", "content": get_personality()},
-        limit_context,
-        *context_buffer
-    ]
-
-    messages.append({"role": "user", "content": msg})
-
     quoted_msg = await get_quoted_msg(message)
-    quoted_context = {"role": "user", "content": "the previous message is responding to: " + quoted_msg.content} if quoted_msg is not None else None
+    user_content = msg
+    if quoted_msg is not None:
+        user_content += "\n\n(the previous message is responding to: " + quoted_msg.content + ")"
 
-    if quoted_context is not None:
-        messages.append(quoted_context)
+    messages = [*context_buffer, {"role": "user", "content": user_content}]
 
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system=get_personality() + "\n\n" + limit_context,
         messages=messages
     )
-    response = completion.choices[0].message.content
+    reply = _extract_text(response)
     add_to_context("user", msg)
-    add_to_context("assistant", response)
+    add_to_context("assistant", reply)
 
-    print(response)
-    return response
+    print(reply)
+    return reply
 
 def get_person_response(personality, msg):
-    completion = ai_client.chat.completions.create(
-        model=gpt_model,
+    response = ai_client.messages.create(
+        model=model,
+        max_tokens=max_tokens,
+        system="You are " + personality,
         messages=[
-            {"role": "system", "content": "Your are " + personality},
             {"role": "user", "content": "respond to someone saying " + msg }
         ]
     )
-    print(completion.choices[0].message.content)
-    return completion.choices[0].message.content
+    text = _extract_text(response)
+    print(text)
+    return text
 
 async def kindness(message):
     try:
@@ -392,18 +404,18 @@ async def appropriate_reaction(message):
 
     try:
         print("getting ai reaction for message: " + message.content)
-        completion = ai_client.chat.completions.create(
-            model=gpt_model,
+        response = ai_client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            system=get_personality() + "\n\nOnly respond with a single emoji character, nothing else.",
             messages=[
-                {"role": "system", "content": get_personality()},
-                {"role": "system", "content": "Only respond with a single emoji character, nothing else." },
                 {"role": "user", "content": prompt }
             ]
         )
 
-        response = completion.choices[0].message.content.strip()
-        print("reacting with " + response)
-        await message.add_reaction(response)
+        emoji = _extract_text(response).strip()
+        print("reacting with " + emoji)
+        await message.add_reaction(emoji)
     except Exception as e:
         print("error getting ai reaction")
         print(e)

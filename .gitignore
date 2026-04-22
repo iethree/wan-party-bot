@@ -11,3 +11,4 @@ Pipfile.lock
 venv/
 env/
 .poo
+.DS_Store
