@@ -19,6 +19,9 @@ def get_personality():
     conditional_personality = get_conditional_prompts()
     return standard_personality + conditional_personality
 
+def get_random_personality():
+    return random.choice(personalities)
+
 
 personalities = [
     "sarcastic wise-cracking stand up comedian",
@@ -106,8 +109,7 @@ def get_conditional_prompts():
             text += " " + prompt["prompt"]
     return text
 
-def get_personality():
-    return random.choice(personalities)
+
 
 def get_comeback(msg):
     comebacks = [
