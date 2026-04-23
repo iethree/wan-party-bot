@@ -302,39 +302,38 @@ async def recap(message):
         return
 
     target_user = quoted_msg.author
-    await think(message)
 
-    one_year_ago = datetime.now() - timedelta(days=365)
-    collected_messages = []
+    async with message.channel.typing():
+        one_year_ago = datetime.now() - timedelta(days=365)
+        collected_messages = []
 
-    if message.guild:
-        for channel in message.guild.text_channels:
-            try:
-                async for msg in channel.history(limit=None, after=one_year_ago):
-                    if msg.author == target_user and msg.content:
-                        collected_messages.append(msg.content)
-            except Exception as e:
-                print(f"Error reading channel {channel.name}: {e}")
-                continue
+        if message.guild:
+            for channel in message.guild.text_channels:
+                try:
+                    async for msg in channel.history(limit=None, after=one_year_ago):
+                        if msg.author == target_user and msg.content:
+                            collected_messages.append(msg.content)
+                except Exception as e:
+                    print(f"Error reading channel {channel.name}: {e}")
+                    continue
 
-    if not collected_messages:
-        await unthink(message)
-        await message.reply(f"I couldn't find any messages from {target_user.display_name} in the past year.")
-        return
+        if not collected_messages:
+            await message.reply(f"I couldn't find any messages from {target_user.display_name} in the past year.")
+            return
 
-    full_text = "\n".join(collected_messages)
-    if len(full_text) > 100000:
-        full_text = full_text[:100000]
+        full_text = "\n".join(collected_messages)
+        if len(full_text) > 100000:
+            full_text = full_text[:100000]
 
-    try:
-        recap_response = get_ai_recap(target_user.display_name, full_text)
-        for chunk in auto_split_messages(recap_response):
-            await quoted_msg.reply(chunk)
-    except Exception as e:
-        print(f"Error generating recap: {e}")
-        await message.add_reaction("😵")
+        try:
+            recap_response = get_ai_recap(target_user.display_name, full_text)
+        except Exception as e:
+            print(f"Error generating recap: {e}")
+            await message.add_reaction("😵")
+            return
 
-    await unthink(message)
+    for chunk in auto_split_messages(recap_response):
+        await quoted_msg.reply(chunk)
 
 
 async def tldr(message):
@@ -351,16 +350,15 @@ async def tldr(message):
         await message.add_reaction("🤷")
         return
 
-    try:
-        await think(message)
-        msg = get_tldr_response(quoted_msg.content)
-    except Exception as e:
-        print("error getting ai tldr response")
-        print(e)
-        msg = get_comeback(quoted_msg.content)
+    async with message.channel.typing():
+        try:
+            msg = get_tldr_response(quoted_msg.content)
+        except Exception as e:
+            print("error getting ai tldr response")
+            print(e)
+            msg = get_comeback(quoted_msg.content)
 
     await quoted_msg.reply(msg)
-    await unthink(message)
 
 async def bot_response(message):
     print('responding to ' + message.content)
@@ -372,9 +370,8 @@ async def bot_response(message):
         print("error checking blacklist")
 
     try:
-        await think(message)
-        msg = await get_bot_response(message)
-        await unthink(message)
+        async with message.channel.typing():
+            msg = await get_bot_response(message)
 
         for chunk in auto_split_messages(msg):
             await message.reply(chunk)
@@ -394,13 +391,6 @@ async def get_quoted_msg(message):
         print('error getting quoted message')
         print(e)
         return None
-
-
-async def think(msg):
-    await msg.add_reaction("🤔")
-
-async def unthink(msg):
-    await msg.remove_reaction("🤔", client.user)
 
 
 async def appropriate_reaction(message):
