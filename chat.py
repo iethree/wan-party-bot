@@ -15,7 +15,7 @@ def _extract_text(response):
     return ""
 
 def get_personality():
-    standard_personality = "Your name is WanBot, aka <@" + client.user +">, and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
+    standard_personality = f"Your name is WanBot, aka {client.user.mention} and you are a helpful robot in a discord server with a keen sense of humor that does not inhibit your helpfulness "
     conditional_personality = get_conditional_prompts()
     return standard_personality + conditional_personality
 
@@ -124,12 +124,12 @@ def get_comeback(msg):
     return random.choice(comebacks)
 
 def get_ai_comeback(msg):
-    personality = get_personality()
+    personality = get_random_personality()
     print("answering as a " + personality)
     response = ai_client.messages.create(
         model=model,
         max_tokens=max_tokens,
-        system=get_personality(),
+        system=personality,
         messages=[
             {"role": "user", "content": "write a short comeback to " + msg }
         ]
@@ -386,11 +386,13 @@ async def bot_response(message):
 
 
 async def get_quoted_msg(message):
+    if message.reference is None:
+        return None
     try:
-        quoted_msg = await message.channel.fetch_message(message.reference.message_id)
-        return quoted_msg
+        return await message.channel.fetch_message(message.reference.message_id)
     except Exception as e:
         print('error getting quoted message')
+        print(e)
         return None
 
 
