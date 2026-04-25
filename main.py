@@ -34,7 +34,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if is_blacklisted_channel(message.channel.name):
+    if is_blacklisted_channel(getattr(message.channel, "name", None)):
         return
 
     print(message.author.display_name + ": " + message.content)
