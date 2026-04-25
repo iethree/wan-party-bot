@@ -7,4 +7,6 @@ blacklist = [
 ]
 
 def is_blacklisted_channel(channel_name):
+  if not channel_name:
+    return False
   return channel_name.lower() in blacklist
