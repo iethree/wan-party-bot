@@ -147,5 +147,5 @@ async def respond_to(client, message):
         if re_matches or str_matches:
             await message.channel.send(response)
 
-    if sometimes(1):
+    if sometimes(0.07):
         await appropriate_reaction(message)
