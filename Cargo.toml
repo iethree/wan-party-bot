@@ -1,0 +1,31 @@
+[package]
+name = "wan-party-bot"
+version = "0.1.0"
+edition = "2021"
+description = "WAN Party Discord Bot, faithfully rewritten in Rust"
+
+# The library crate holds every ported module; the two binaries below mirror the
+# two Python entrypoints: `main.py` (the bot) and `trigger_poll.py` (one-shot poll).
+[lib]
+name = "wan_party_bot"
+path = "src/lib.rs"
+
+[[bin]]
+name = "wan-party-bot"
+path = "src/main.rs"
+
+[[bin]]
+name = "trigger_poll"
+path = "src/bin/trigger_poll.rs"
+
+[dependencies]
+serenity = { version = "0.12", default-features = true }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+regex = "1"
+rand = "0.8"
+chrono = "0.4"
+once_cell = "1"

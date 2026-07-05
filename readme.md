@@ -8,11 +8,26 @@ You have chosen, or been chosen, to relocate to one of our finest remaining code
 
 - ability to update crontab
 
+- rewritten in Rust (the original Python implementation has been removed)
+
 ## Running locally
 
+The bot is a Rust/`serenity` application. Two binaries mirror the two original
+Python entrypoints:
+
+- `wan-party-bot` — the bot itself (was `main.py`)
+- `trigger_poll` — post the weekly games poll once, then exit (was `trigger_poll.py`)
+
 ```zsh
-python3 -m venv env
-source env/bin/activate
-python3 -m pip install -r requirements.txt
-DISCORD_TOKEN=TOKEN_HERE python3 -m main.py
+# build
+cargo build --release
+
+# run the bot (reads ANTHROPIC_API_KEY / GIPHY_TOKEN from the environment too)
+DISCORD_TOKEN=TOKEN_HERE cargo run --release --bin wan-party-bot
+
+# post the weekly poll and exit
+DISCORD_TOKEN=TOKEN_HERE cargo run --release --bin trigger_poll
 ```
+
+It still reads the `data/`, `corpora/`, and `wanparty.db` files by relative path,
+so run it from the repo root.

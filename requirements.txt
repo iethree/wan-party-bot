@@ -1,5 +1,0 @@
-discord.py
-giphy_client
-wonderwords
-openai
-emoji
