@@ -1,0 +1,6 @@
+# Pin a modern toolchain. serenity 0.12 (and the rest of the dep tree) require
+# Rust >= 1.74; edition 2021 requires >= 1.56. If the host uses rustup, cargo will
+# auto-install/select this channel, avoiding "edition 2021 unknown" from an old
+# distro-packaged toolchain.
+[toolchain]
+channel = "stable"
