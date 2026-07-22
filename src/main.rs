@@ -39,7 +39,9 @@ impl EventHandler for Handler {
         // await tree.sync()  <-- commented out in the original. Sync only
         // (re-)registers commands with Discord; the commands were synced in the
         // past, so Discord still delivers the interactions and the Python tree
-        // dispatched them. See `interaction_create` below.
+        // dispatched them. See `interaction_create` below. The one schema change
+        // since then (/sayquote's optional user filter) is upserted here.
+        commands::register(&ctx).await;
 
         ctx.set_activity(Some(ActivityData::playing(status_info)));
     }

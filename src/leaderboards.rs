@@ -14,7 +14,9 @@ pub async fn fetch_leaderboards(
     channel_display_name: Option<String>,
 ) -> Vec<String> {
     println!("fetching leaderboards");
-    let history = discord_util::channel_history(ctx, channel_id, Some(10000)).await;
+    // ponytail: 2000 msgs ≈ 20 API calls ≈ ~15s; the original 10,000 took minutes
+    // of rate-limited paging. Bump it back up if the stats feel too shallow.
+    let history = discord_util::channel_history(ctx, channel_id, Some(2000)).await;
 
     let mut users: HashMap<String, UserInfo> = HashMap::new();
     let mut order: Vec<String> = Vec::new();

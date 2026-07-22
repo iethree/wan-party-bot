@@ -28,9 +28,29 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use regex::Regex;
 use serenity::all::{
-    CommandInteraction, Context, CreateInteractionResponse, CreateInteractionResponseFollowup,
-    CreateInteractionResponseMessage, Mentionable, Message,
+    Command, CommandDataOptionValue, CommandInteraction, CommandOptionType, Context,
+    CreateCommand, CreateCommandOption, CreateInteractionResponse,
+    CreateInteractionResponseFollowup, CreateInteractionResponseMessage, Mentionable, Message,
 };
+
+/// Upsert the one command whose schema differs from the long-ago Python
+/// `tree.sync()`: `/sayquote` gained an optional user filter. Global command
+/// creation is an upsert by name, so the other registrations are untouched.
+pub async fn register(ctx: &Context) {
+    let sayquote = CreateCommand::new("sayquote")
+        .description("Get a random quote")
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::User,
+                "user",
+                "Only say quotes from this user",
+            )
+            .required(false),
+        );
+    if let Err(e) = Command::create_global_command(&ctx.http, sayquote).await {
+        println!("error registering /sayquote: {e}");
+    }
+}
 
 /// Slash-command dispatch — see the fidelity note at the top of this file.
 pub async fn dispatch(ctx: &Context, cmd: &CommandInteraction) {
@@ -57,8 +77,11 @@ pub async fn dispatch(ctx: &Context, cmd: &CommandInteraction) {
                 return;
             }
             let channel_display = discord_util::channel_name(ctx, cmd.channel_id).await;
+            // fetch_, not get_: the channel spinner is redundant noise on top of
+            // the deferred-response indicator.
             let responses =
-                crate::leaderboards::get_leaderboards(ctx, cmd.channel_id, channel_display).await;
+                crate::leaderboards::fetch_leaderboards(ctx, cmd.channel_id, channel_display)
+                    .await;
             let mut chunk = String::new();
             for response in &responses {
                 if !chunk.is_empty()
@@ -79,7 +102,13 @@ pub async fn dispatch(ctx: &Context, cmd: &CommandInteraction) {
             return;
         }
         "mysterious_merchant" => Some(merchant_msg()),
-        "sayquote" => sayquote_msg(),
+        "sayquote" => {
+            let target = cmd.data.options.first().and_then(|o| match o.value {
+                CommandDataOptionValue::User(uid) => Some(uid.get() as i64),
+                _ => None,
+            });
+            sayquote_msg(target)
+        }
         "quotestats" => Some(quotestats_msg()),
         "quotedump" => Some(quotedump_msg()),
         "game_poll" => {
@@ -721,22 +750,30 @@ pub async fn rick(ctx: &Context, message: &Message) {
 
 /// Python sends DB errors to the user; an empty table raises outside the try
 /// (`q[1]` on `None`) and nothing is sent.
-fn sayquote_msg() -> Option<String> {
+fn sayquote_msg(user: Option<i64>) -> Option<String> {
     let row = (|| -> rusqlite::Result<(i64, String)> {
         let conn = db::connect()?;
-        conn.query_row("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1", [], |r| {
-            Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?))
-        })
+        let map = |r: &rusqlite::Row| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?));
+        match user {
+            Some(uid) => conn.query_row(
+                "SELECT * FROM quotes WHERE user_id = ? ORDER BY RANDOM() LIMIT 1",
+                [uid],
+                map,
+            ),
+            None => conn.query_row("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1", [], map),
+        }
     })();
     match row {
         Ok((user_id, quote)) => Some(format!("{quote} --<@{user_id}>")),
-        Err(rusqlite::Error::QueryReturnedNoRows) => None,
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            user.map(|uid| format!("I've got nothing on <@{uid}>"))
+        }
         Err(e) => Some(e.to_string()),
     }
 }
 
 pub async fn sayquote(ctx: &Context, message: &Message) {
-    if let Some(msg) = sayquote_msg() {
+    if let Some(msg) = sayquote_msg(None) {
         respond(ctx, message, msg).await;
     }
 }
