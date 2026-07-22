@@ -1,13 +1,16 @@
 //! Port of `commands.py`.
 //!
 //! IMPORTANT FIDELITY NOTE: in the original, these are all `discord.app_commands`
-//! slash commands registered on a `CommandTree`, but `main.py` has `tree.sync()`
-//! commented out — so NONE of them are ever registered with Discord, and none run
-//! in the live bot. Several also reference an undefined `interaction` name and
-//! would `NameError` if they ever executed. They are ported here for structural
-//! completeness with the same (never-reached) logic, resolving the `ctx`/
-//! `interaction` confusion to the triggering message/context. They are NOT wired
-//! into any interaction handler, mirroring the commented-out sync.
+//! slash commands on a `CommandTree`. `main.py` has `tree.sync()` commented out,
+//! but sync only (re-)registers commands with Discord — the commands were synced
+//! at some point in the past, so Discord still delivers the interactions and the
+//! Python tree dispatched them. `dispatch` below is the Rust equivalent, handling
+//! the commands that actually worked in Python. The rest crashed before ever
+//! responding (`interaction.message` is `None` for slash commands, and several
+//! functions reference an undefined `interaction` name), so they fall through to
+//! the no-response default, which is what Python's uncaught exceptions produced.
+//! The `&Message`-based ports of those broken commands are kept below for
+//! structural completeness but are never called.
 
 #![allow(dead_code, unused_variables)]
 
@@ -24,7 +27,87 @@ use once_cell::sync::Lazy;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use regex::Regex;
-use serenity::all::{Context, Mentionable, Message};
+use serenity::all::{
+    CommandInteraction, Context, CreateInteractionResponse, CreateInteractionResponseFollowup,
+    CreateInteractionResponseMessage, Mentionable, Message,
+};
+
+/// Slash-command dispatch — see the fidelity note at the top of this file.
+pub async fn dispatch(ctx: &Context, cmd: &CommandInteraction) {
+    let name = cmd.data.name.as_str();
+    let mut ephemeral = false;
+    let content: Option<String> = match name {
+        // The command name doubles as the corpus key.
+        "dick" | "dickens" | "willy" | "thomas" | "jane" => Some(format!(
+            "> {} ",
+            quotes::get_random_quote(name).replace('\n', "\n> ")
+        )),
+        "v" => Some(quotes::get_dwarf_quote()),
+        "rick" => Some(sing_to_me()),
+        "rollin" => Some("Aww yeah 😎".to_string()),
+        "sepuku" | "seppuku" | "die" => {
+            Some("https://giphy.com/gifs/KRY2oGS7SPvO0".to_string())
+        }
+        // Python's second send raised InteractionResponded, so only this arrived.
+        "discipline_ryan" => Some("No! Bad Ryan! Bad!".to_string()),
+        "leaderboards" => {
+            // The history scan takes well over Discord's 3s interaction deadline,
+            // so ack with a deferred response and deliver via follow-ups.
+            if cmd.defer(&ctx.http).await.is_err() {
+                return;
+            }
+            let channel_display = discord_util::channel_name(ctx, cmd.channel_id).await;
+            let responses =
+                crate::leaderboards::get_leaderboards(ctx, cmd.channel_id, channel_display).await;
+            let mut chunk = String::new();
+            for response in &responses {
+                if !chunk.is_empty()
+                    && chunk.chars().count() + response.chars().count() + 1 > 2000
+                {
+                    let followup =
+                        CreateInteractionResponseFollowup::new().content(chunk.clone());
+                    let _ = cmd.create_followup(&ctx.http, followup).await;
+                    chunk.clear();
+                }
+                chunk.push_str(response);
+                chunk.push('\n');
+            }
+            if !chunk.is_empty() {
+                let followup = CreateInteractionResponseFollowup::new().content(chunk);
+                let _ = cmd.create_followup(&ctx.http, followup).await;
+            }
+            return;
+        }
+        "mysterious_merchant" => Some(merchant_msg()),
+        "sayquote" => sayquote_msg(),
+        "quotestats" => Some(quotestats_msg()),
+        "quotedump" => Some(quotedump_msg()),
+        "game_poll" => {
+            let hours = cmd
+                .data
+                .options
+                .first()
+                .and_then(|o| o.value.as_str())
+                .and_then(|s| s.parse::<i64>().ok());
+            poll(ctx, hours.unwrap_or_else(hours_left)).await;
+            ephemeral = true;
+            Some("✅".to_string())
+        }
+        // Everything else crashed in Python before responding; do the same nothing.
+        _ => None,
+    };
+
+    if let Some(text) = content {
+        let builder = CreateInteractionResponse::Message(
+            CreateInteractionResponseMessage::new()
+                .content(text)
+                .ephemeral(ephemeral),
+        );
+        if let Err(e) = cmd.create_response(&ctx.http, builder).await {
+            println!("interaction response error ({name}): {e}");
+        }
+    }
+}
 
 async fn respond(ctx: &Context, message: &Message, text: impl Into<String>) {
     let _ = message.channel_id.say(&ctx.http, text.into()).await;
@@ -636,36 +719,48 @@ pub async fn rick(ctx: &Context, message: &Message) {
     respond(ctx, message, sing_to_me()).await;
 }
 
-pub async fn sayquote(ctx: &Context, message: &Message) {
-    let row = db::connect().ok().and_then(|conn| {
-        conn.query_row(
-            "SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1",
-            [],
-            |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)),
-        )
-        .ok()
-    });
-    if let Some((user_id, quote)) = row {
-        respond(ctx, message, format!("{quote} --<@{user_id}>")).await;
+/// Python sends DB errors to the user; an empty table raises outside the try
+/// (`q[1]` on `None`) and nothing is sent.
+fn sayquote_msg() -> Option<String> {
+    let row = (|| -> rusqlite::Result<(i64, String)> {
+        let conn = db::connect()?;
+        conn.query_row("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1", [], |r| {
+            Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?))
+        })
+    })();
+    match row {
+        Ok((user_id, quote)) => Some(format!("{quote} --<@{user_id}>")),
+        Err(rusqlite::Error::QueryReturnedNoRows) => None,
+        Err(e) => Some(e.to_string()),
     }
 }
 
-pub async fn quotestats(ctx: &Context, message: &Message) {
-    let rows: Vec<(i64, i64)> = (|| -> rusqlite::Result<Vec<(i64, i64)>> {
+pub async fn sayquote(ctx: &Context, message: &Message) {
+    if let Some(msg) = sayquote_msg() {
+        respond(ctx, message, msg).await;
+    }
+}
+
+fn quotestats_msg() -> String {
+    let rows = (|| -> rusqlite::Result<Vec<(i64, i64)>> {
         let conn = db::connect()?;
         let mut stmt = conn.prepare(
             "SELECT user_id, COUNT(*) AS count FROM quotes GROUP BY user_id ORDER BY count DESC",
         )?;
         let mapped = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))?;
         mapped.collect()
-    })()
-    .unwrap_or_default();
-
-    let mut result = String::new();
-    for (uid, count) in rows {
-        result.push_str(&format!("<@{uid}> has been quoted {count} times\n"));
+    })();
+    match rows {
+        Ok(rows) => rows
+            .iter()
+            .map(|(uid, count)| format!("<@{uid}> has been quoted {count} times\n"))
+            .collect(),
+        Err(e) => e.to_string(),
     }
-    respond(ctx, message, result).await;
+}
+
+pub async fn quotestats(ctx: &Context, message: &Message) {
+    respond(ctx, message, quotestats_msg()).await;
 }
 
 pub async fn loading(ctx: &Context, message: &Message) {
@@ -699,20 +794,25 @@ pub async fn leaderboards(ctx: &Context, message: &Message) {
     }
 }
 
-pub async fn quotedump(ctx: &Context, message: &Message) {
-    let rows: Vec<(i64, String)> = (|| -> rusqlite::Result<Vec<(i64, String)>> {
+fn quotedump_msg() -> String {
+    let rows = (|| -> rusqlite::Result<Vec<(i64, String)>> {
         let conn = db::connect()?;
         let mut stmt = conn.prepare("SELECT * FROM quotes ORDER BY user_id")?;
         let mapped = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?;
         mapped.collect()
-    })()
-    .unwrap_or_default();
-    let msg = rows
-        .iter()
-        .map(|(uid, q)| format!("<@{uid}>\t{q}"))
-        .collect::<Vec<_>>()
-        .join("\n");
-    respond(ctx, message, msg).await;
+    })();
+    match rows {
+        Ok(rows) => rows
+            .iter()
+            .map(|(uid, q)| format!("<@{uid}>\t{q}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        Err(e) => e.to_string(),
+    }
+}
+
+pub async fn quotedump(ctx: &Context, message: &Message) {
+    respond(ctx, message, quotedump_msg()).await;
 }
 
 fn get_article(word: &str) -> String {
@@ -724,7 +824,7 @@ fn get_article(word: &str) -> String {
     }
 }
 
-pub async fn mysterious_merchant(ctx: &Context, message: &Message) {
+fn merchant_msg() -> String {
     use crate::text_util::read_text;
     let mut descriptors: Vec<String> = read_text("./data/item_desc.txt")
         .lines()
@@ -766,10 +866,13 @@ pub async fn mysterious_merchant(ctx: &Context, message: &Message) {
         count += 1;
     }
 
-    let msg = format!(
+    format!(
         "Your tawdry little invocation summons {merchant_desc} {merchant}. They stand too close to you. They offer you their paltry wares. Type /select <item> to choose an item: \n{item_list}"
-    );
-    respond(ctx, message, msg).await;
+    )
+}
+
+pub async fn mysterious_merchant(ctx: &Context, message: &Message) {
+    respond(ctx, message, merchant_msg()).await;
 }
 
 pub async fn select(

@@ -1,11 +1,15 @@
 //! Port of `main.py` — the bot entrypoint and gateway event handlers.
 
-use serenity::all::{ActivityData, Context, EventHandler, GatewayIntents, Message, Ready};
+use serenity::all::{
+    ActivityData, Context, EventHandler, GatewayIntents, Interaction, Message, Ready,
+};
 use serenity::async_trait;
 use serenity::Client;
 
 use wan_party_bot::blacklist::is_blacklisted_channel;
-use wan_party_bot::{botself, chat, client as client_cfg, db, discord_util, message_handler, quote};
+use wan_party_bot::{
+    botself, chat, client as client_cfg, commands, db, discord_util, message_handler, quote,
+};
 
 fn today_mmdd() -> String {
     chrono::Local::now().format("%m-%d").to_string()
@@ -32,8 +36,10 @@ impl EventHandler for Handler {
             .unwrap_or_default();
         let status_info = format!("{host} | {commit}");
 
-        // await tree.sync()  <-- commented out in the original; intentionally NOT
-        // syncing slash commands, so commands.rs stays dead exactly like commands.py.
+        // await tree.sync()  <-- commented out in the original. Sync only
+        // (re-)registers commands with Discord; the commands were synced in the
+        // past, so Discord still delivers the interactions and the Python tree
+        // dispatched them. See `interaction_create` below.
 
         ctx.set_activity(Some(ActivityData::playing(status_info)));
     }
@@ -100,6 +106,13 @@ impl EventHandler for Handler {
             if !r.is_empty() {
                 let _ = message.channel_id.say(&ctx.http, r).await;
             }
+        }
+    }
+
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::Command(cmd) = interaction {
+            println!("{}: /{}", cmd.user.name, cmd.data.name);
+            commands::dispatch(&ctx, &cmd).await;
         }
     }
 
