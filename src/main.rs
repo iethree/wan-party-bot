@@ -24,18 +24,13 @@ impl EventHandler for Handler {
         botself::set_bot_id(ready.user.id.get());
         println!("we have logged in as {}", ready.user.name);
 
-        // status_info = hostname + " | " + last git commit message (each with the
-        // trailing newline from the subprocess output, exactly like Python).
+        // Presence: "v<version> | <last commit message>".
         let commit = std::process::Command::new("git")
             .args(["log", "-1", "--pretty=%B"])
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
             .unwrap_or_default();
-        let host = std::process::Command::new("hostname")
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-            .unwrap_or_default();
-        let status_info = format!("v{} | {host} | {commit}", wan_party_bot::VERSION);
+        let status_info = format!("v{} | {}", wan_party_bot::VERSION, commit.trim());
 
         // await tree.sync()  <-- commented out in the original. Sync only
         // (re-)registers commands with Discord; the commands were synced in the
