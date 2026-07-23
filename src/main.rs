@@ -35,7 +35,7 @@ impl EventHandler for Handler {
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
             .unwrap_or_default();
-        let status_info = format!("{host} | {commit}");
+        let status_info = format!("v{} | {host} | {commit}", wan_party_bot::VERSION);
 
         // await tree.sync()  <-- commented out in the original. Sync only
         // (re-)registers commands with Discord; the commands were synced in the
@@ -128,6 +128,10 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+    // Log the baked-in build version up front so `journalctl -u partybot` shows
+    // exactly which build is running (version = total commits on the branch).
+    println!("wan-party-bot v{} starting", wan_party_bot::VERSION);
+
     // main.py calls initiate_tables() at import time.
     db::initiate_tables();
 

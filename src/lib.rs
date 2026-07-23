@@ -15,6 +15,11 @@
 //!     universal-newline translation (\r\n -> \n). [`text_util::read_text`]
 //!     reproduces that so CRLF data files (e.g. `data/dick.txt`) split identically.
 
+/// Build-time version: the total number of commits on the branch
+/// (`git rev-list --count HEAD`), baked in by `build.rs`. Falls back to `"unknown"`
+/// when built outside a git checkout (e.g. from a source tarball).
+pub const VERSION: &str = env!("BUILD_VERSION");
+
 pub mod blacklist;
 pub mod chat;
 pub mod client;

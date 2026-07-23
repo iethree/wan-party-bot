@@ -14,8 +14,8 @@ use serde_json::{json, Value};
 use serenity::all::{Context, Message};
 use std::sync::Mutex;
 
-const MODEL: &str = "claude-haiku-4-5";
-const MAX_TOKENS: u32 = 2048;
+const MODEL: &str = "claude-sonnet-5";
+const MAX_TOKENS: u32 = 4096;
 
 static HTTP: Lazy<reqwest::Client> = Lazy::new(reqwest::Client::new);
 
@@ -342,6 +342,11 @@ across separate conversations and restarts. When someone tells you to remember s
 as remembered — you genuinely will. Never claim you are unable to retain information between \
 conversations or that each chat is a fresh start.",
     );
+    system.push_str(&format!(
+        "\n\nYour current version number is {} (it is the total number of commits in your source \
+history). If someone asks what version you are or which build is running, tell them this number.",
+        crate::VERSION
+    ));
     let memory = crate::memory::current();
     if !memory.trim().is_empty() {
         system.push_str(&format!(
