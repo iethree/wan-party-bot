@@ -8,7 +8,8 @@ use serenity::Client;
 
 use wan_party_bot::blacklist::is_blacklisted_channel;
 use wan_party_bot::{
-    botself, chat, client as client_cfg, commands, db, discord_util, message_handler, quote,
+    botself, chat, client as client_cfg, commands, db, discord_util, memory, message_handler,
+    quote,
 };
 
 fn today_mmdd() -> String {
@@ -129,6 +130,10 @@ impl EventHandler for Handler {
 async fn main() {
     // main.py calls initiate_tables() at import time.
     db::initiate_tables();
+
+    // Long-term memory: load the persisted digest and start the periodic flusher.
+    memory::init();
+    memory::spawn_flusher();
 
     let token = std::env::var("DISCORD_TOKEN").unwrap_or_default();
     let intents: GatewayIntents = client_cfg::intents();

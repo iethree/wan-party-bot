@@ -30,6 +30,7 @@ pub mod leaderboards;
 pub mod lexical_analysis;
 pub mod lexical_constants;
 pub mod markov_haiku;
+pub mod memory;
 pub mod message_handler;
 pub mod poll;
 pub mod quote;

@@ -181,6 +181,25 @@ async fn get_ai_recap(username: &str, messages_text: &str) -> Result<String, Str
     Ok(text)
 }
 
+/// Fold a batch of new messages into the long-term memory digest. Lives here so it
+/// can reuse the Anthropic client; driven by [`crate::memory`].
+pub(crate) async fn summarize_memory(existing: &str, transcript: &str) -> Result<String, String> {
+    let system = "You maintain WanBot's long-term memory of the people in its Discord server. \
+You are given the CURRENT MEMORY (a Markdown digest, possibly empty) and a batch of NEW MESSAGES, each line prefixed with the speaker's display name. \
+Return an UPDATED Markdown digest that folds the salient new information into the existing memory. \
+Group it by user with a `## <display name>` heading per person, followed by concise bullet points. \
+For each person capture durable, salient facts: their recurring interests and the kinds of questions they ask, their sentiment toward WanBot (explicitly call out anyone who is hostile, insulting, or negative toward the bot), running jokes, strong opinions, and preferences. \
+Merge with the existing memory instead of duplicating, drop stale or trivial details, and never invent anything the messages don't support. Keep the entire digest well under 800 words. \
+Respond with ONLY the Markdown digest — no preamble, no commentary, no code fences.";
+    let existing_block = if existing.trim().is_empty() {
+        "(none yet)"
+    } else {
+        existing
+    };
+    let user = format!("CURRENT MEMORY:\n{existing_block}\n\n---\n\nNEW MESSAGES:\n{transcript}");
+    create_message(system, vec![json!({"role":"user","content": user})]).await
+}
+
 async fn get_person_response(personality: &str, msg: &str) -> Result<String, String> {
     let text = create_message(
         &format!("You are {personality}"),
@@ -312,7 +331,13 @@ async fn get_bot_response(ctx: &Context, message: &Message) -> Result<String, St
     };
     messages.push(json!({"role":"user","content": user_content}));
 
-    let system = format!("{}\n\n{}", get_personality(), LIMIT_CONTEXT);
+    let mut system = format!("{}\n\n{}", get_personality(), LIMIT_CONTEXT);
+    let memory = crate::memory::current();
+    if !memory.trim().is_empty() {
+        system.push_str(&format!(
+            "\n\nHere's what you remember about the people in this server (use it naturally to inform your reply; don't recite it verbatim):\n{memory}"
+        ));
+    }
     let reply = create_message(&system, messages).await?;
 
     add_to_context("user", &msg);
@@ -523,6 +548,10 @@ pub async fn bot_response(ctx: &Context, message: &Message) {
         react(ctx, message, "🙅‍♀️").await;
         return;
     }
+
+    // Long-term memory: record only direct interactions — this path is reached only
+    // via an @-mention or a DM to the bot — with the author's display name.
+    crate::memory::record(&discord_util::display_name(message), &message.content);
 
     // The original wraps BOTH the AI call and the chunked replies in one try/except,
     // so a failure sending any reply also lands on the 🤷‍♀️ fallback.
