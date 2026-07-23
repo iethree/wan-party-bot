@@ -149,7 +149,49 @@ async fn main() {
         }
     };
 
-    if let Err(e) = client.start().await {
-        eprintln!("client error: {e}");
+    // Run the client until it exits or a shutdown signal arrives, then drain any
+    // pending memory to disk so a redeploy/restart doesn't lose interactions
+    // recorded since the last periodic flush.
+    tokio::select! {
+        res = client.start() => {
+            if let Err(e) = res {
+                eprintln!("client error: {e}");
+            }
+        }
+        _ = shutdown_signal() => {
+            println!("shutdown signal received");
+        }
+    }
+
+    println!("draining pending memory before exit...");
+    if tokio::time::timeout(std::time::Duration::from_secs(25), memory::flush_now())
+        .await
+        .is_err()
+    {
+        eprintln!("memory drain timed out");
+    }
+}
+
+/// Resolves when the process is asked to stop: SIGTERM (a redeploy / process
+/// manager) or SIGINT (Ctrl-C). Falls back to Ctrl-C only on non-unix platforms.
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+        let (mut term, mut int) = match (
+            signal(SignalKind::terminate()),
+            signal(SignalKind::interrupt()),
+        ) {
+            (Ok(t), Ok(i)) => (t, i),
+            _ => return,
+        };
+        tokio::select! {
+            _ = term.recv() => {}
+            _ = int.recv() => {}
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = tokio::signal::ctrl_c().await;
     }
 }

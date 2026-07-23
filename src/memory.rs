@@ -86,6 +86,13 @@ pub fn spawn_flusher() {
     });
 }
 
+/// Force an immediate flush of everything currently pending — used on graceful
+/// shutdown so a redeploy/restart doesn't drop the interactions recorded since the
+/// last periodic flush. No-op if nothing is pending.
+pub async fn flush_now() {
+    flush().await;
+}
+
 /// Drain the pending messages and fold them into the digest. Serialized; the batch
 /// is re-queued on failure so a transient API error doesn't lose it.
 async fn flush() {

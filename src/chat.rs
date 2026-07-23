@@ -332,6 +332,16 @@ async fn get_bot_response(ctx: &Context, message: &Message) -> Result<String, St
     messages.push(json!({"role":"user","content": user_content}));
 
     let mut system = format!("{}\n\n{}", get_personality(), LIMIT_CONTEXT);
+    // Always tell the bot it genuinely has persistent, cross-conversation memory so
+    // it never falls back to the stock "I can't remember between chats" disclaimer.
+    // (Direct interactions are recorded and periodically folded into the digest, so
+    // this is true — even before the first digest exists.)
+    system.push_str(
+        "\n\nYou have a persistent long-term memory of the people in this server that carries \
+across separate conversations and restarts. When someone tells you to remember something, treat it \
+as remembered — you genuinely will. Never claim you are unable to retain information between \
+conversations or that each chat is a fresh start.",
+    );
     let memory = crate::memory::current();
     if !memory.trim().is_empty() {
         system.push_str(&format!(
