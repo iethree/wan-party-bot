@@ -185,9 +185,12 @@ async fn get_ai_recap(username: &str, messages_text: &str) -> Result<String, Str
 /// can reuse the Anthropic client; driven by [`crate::memory`].
 pub(crate) async fn summarize_memory(existing: &str, transcript: &str) -> Result<String, String> {
     let system = "You maintain WanBot's long-term memory of the people in its Discord server. \
-You are given the CURRENT MEMORY (a Markdown digest, possibly empty) and a batch of NEW MESSAGES, each line prefixed with the speaker's display name. \
+You are given the CURRENT MEMORY (a Markdown digest, possibly empty) and a batch of NEW MESSAGES, each line prefixed with the speaker as `<display name> (uid <numeric id>)`. \
+The uid is the person's identity — display names change over time and two different people can use the same one, so NEVER identify anyone by display name. \
 Return an UPDATED Markdown digest that folds the salient new information into the existing memory. \
-Group it by user with a `## <display name>` heading per person, followed by concise bullet points. \
+Group it by user with a `## <display name> (uid <numeric id>)` heading per person, followed by concise bullet points. \
+Merge a message into the existing section with the same uid (updating that heading's display name if it changed); never create a second section for a uid that already has one, and never merge two different uids even if their display names are identical. \
+Attribute each fact only to the uid of the line it came from — do not carry one person's facts onto another. \
 For each person capture durable, salient facts: their recurring interests and the kinds of questions they ask, their sentiment toward WanBot (explicitly call out anyone who is hostile, insulting, or negative toward the bot), running jokes, strong opinions, and preferences. \
 Merge with the existing memory instead of duplicating, drop stale or trivial details, and never invent anything the messages don't support. Keep the entire digest well under 800 words. \
 Respond with ONLY the Markdown digest — no preamble, no commentary, no code fences.";
@@ -312,7 +315,16 @@ async fn react(ctx: &Context, msg: &Message, emoji: &str) {
 
 /// `get_bot_response(message)` — the conversational reply, with shared context.
 async fn get_bot_response(ctx: &Context, message: &Message) -> Result<String, String> {
-    let msg = message.content.clone();
+    // The context buffer is shared by everyone in the server, so every user turn
+    // must name its speaker — otherwise the model reads the whole buffer as one
+    // conversation with one person and pins everyone's memories on whoever is
+    // currently talking.
+    let msg = format!(
+        "{} (uid {}): {}",
+        discord_util::display_name(message),
+        message.author.id.get(),
+        message.content
+    );
 
     let quoted = get_quoted_msg(ctx, message).await;
     let mut user_content = msg.clone();
@@ -347,10 +359,19 @@ conversations or that each chat is a fresh start.",
 history). If someone asks what version you are or which build is running, tell them this number.",
         crate::VERSION
     ));
+    system.push_str(
+        "\n\nThis conversation is shared by many different people. Every user turn is prefixed \
+with its speaker as `<display name> (uid <numeric id>): `, and consecutive turns are usually \
+different people. The uid identifies the person; display names change and can be shared. Address \
+and attribute things to the speaker of the turn you are replying to, never to whoever spoke \
+before them. Do not prefix your own replies with a name or uid, and don't mention uids out loud.",
+    );
     let memory = crate::memory::current();
     if !memory.trim().is_empty() {
         system.push_str(&format!(
-            "\n\nHere's what you remember about the people in this server (use it naturally to inform your reply; don't recite it verbatim):\n{memory}"
+            "\n\nHere's what you remember about the people in this server, in sections keyed by uid \
+(use only the section whose uid matches the person you're replying to; use it naturally to inform \
+your reply; don't recite it verbatim):\n{memory}"
         ));
     }
     let reply = create_message(&system, messages).await?;
@@ -566,7 +587,11 @@ pub async fn bot_response(ctx: &Context, message: &Message) {
 
     // Long-term memory: record only direct interactions — this path is reached only
     // via an @-mention or a DM to the bot — with the author's display name.
-    crate::memory::record(&discord_util::display_name(message), &message.content);
+    crate::memory::record(
+        message.author.id.get(),
+        &discord_util::display_name(message),
+        &message.content,
+    );
 
     // The original wraps BOTH the AI call and the chunked replies in one try/except,
     // so a failure sending any reply also lands on the 🤷‍♀️ fallback.

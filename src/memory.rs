@@ -31,14 +31,65 @@ const MAX_PENDING: usize = 200;
 const MAX_MEMORY_CHARS: usize = 8000;
 
 struct Interaction {
+    /// Stable Discord user id — the identity. Display names are mutable and two
+    /// people can share one, so they can't key the digest.
+    user_id: u64,
     author: String,
     content: String,
+}
+
+/// One transcript line per interaction, carrying the stable id alongside the
+/// display name so the summarizer can key sections by identity, not by nickname.
+fn transcript(batch: &[Interaction]) -> String {
+    batch
+        .iter()
+        .map(|i| {
+            format!(
+                "{} (uid {}): {}",
+                i.author,
+                i.user_id,
+                i.content.replace('\n', " ")
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 static PENDING: Lazy<Mutex<Vec<Interaction>>> = Lazy::new(|| Mutex::new(Vec::new()));
 static MEMORY: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new()));
 /// Serializes flushes so two summarizations can't race on the file / digest.
 static FLUSH_LOCK: Lazy<AsyncMutex<()>> = Lazy::new(|| AsyncMutex::new(()));
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn transcript_keys_speakers_by_id_not_display_name() {
+        // Two different people sharing a display name, and one person who renamed.
+        let batch = vec![
+            Interaction {
+                user_id: 1,
+                author: "void".into(),
+                content: "hi".into(),
+            },
+            Interaction {
+                user_id: 2,
+                author: "void".into(),
+                content: "multi\nline".into(),
+            },
+            Interaction {
+                user_id: 1,
+                author: "vοid".into(),
+                content: "back".into(),
+            },
+        ];
+        assert_eq!(
+            transcript(&batch),
+            "void (uid 1): hi\nvoid (uid 2): multi line\nvοid (uid 1): back"
+        );
+    }
+}
 
 /// Load `memory.md` into the in-process digest. Call once at startup.
 pub fn init() {
@@ -52,15 +103,16 @@ pub fn current() -> String {
     MEMORY.lock().unwrap().clone()
 }
 
-/// Record one message (author display name + content). Cheap and non-blocking;
-/// summarization happens later, off the message path.
-pub fn record(author: &str, content: &str) {
+/// Record one message (author id + display name + content). Cheap and
+/// non-blocking; summarization happens later, off the message path.
+pub fn record(user_id: u64, author: &str, content: &str) {
     if content.trim().is_empty() {
         return;
     }
     let should_flush = {
         let mut pending = PENDING.lock().unwrap();
         pending.push(Interaction {
+            user_id,
             author: author.to_string(),
             content: content.to_string(),
         });
@@ -106,14 +158,9 @@ async fn flush() {
         std::mem::take(&mut *pending)
     };
 
-    let transcript = batch
-        .iter()
-        .map(|i| format!("{}: {}", i.author, i.content.replace('\n', " ")))
-        .collect::<Vec<_>>()
-        .join("\n");
     let existing = current();
 
-    match crate::chat::summarize_memory(&existing, &transcript).await {
+    match crate::chat::summarize_memory(&existing, &transcript(&batch)).await {
         Ok(updated) => {
             let mut updated = updated.trim().to_string();
             if updated.chars().count() > MAX_MEMORY_CHARS {
