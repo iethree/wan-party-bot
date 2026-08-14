@@ -2,7 +2,9 @@
 //! rolling context buffer.
 //!
 //! Every direct interaction with the bot (an @-mention or a DM, i.e. the
-//! `chat::bot_response` path) is recorded together with its author's display name.
+//! `chat::bot_response` path) is recorded together with its author's identity, as is
+//! every message the server saves with `/quote` (attributed to whoever said the
+//! quoted line, not to whoever ran the command).
 //! Periodically — on a timer, and immediately when a burst piles up — the
 //! accumulated messages are folded by the model into a Markdown
 //! digest that attributes salient facts to the users who said them: sentiment
@@ -29,6 +31,9 @@ const FLUSH_AT_PENDING: usize = 40;
 const MAX_PENDING: usize = 200;
 /// Safety cap on the persisted digest so the injected system prompt stays bounded.
 const MAX_MEMORY_CHARS: usize = 8000;
+/// Marks a transcript line as a `/quote`-saved line rather than something said to the
+/// bot. `chat::summarize_memory`'s prompt documents this token — keep them in sync.
+const QUOTE_MARKER: &str = "[saved quote]";
 
 struct Interaction {
     /// Stable Discord user id — the identity. Display names are mutable and two
@@ -126,6 +131,14 @@ pub fn record(user_id: u64, author: &str, content: &str) {
     }
 }
 
+/// Record a `/quote`-saved line, attributed to the person who originally said it.
+pub fn record_quote(user_id: u64, author: &str, text: &str) {
+    if text.trim().is_empty() {
+        return;
+    }
+    record(user_id, author, &format!("{QUOTE_MARKER} {text}"));
+}
+
 /// Spawn the periodic flusher. Call once at startup, inside the tokio runtime.
 pub fn spawn_flusher() {
     tokio::spawn(async {
@@ -140,20 +153,22 @@ pub fn spawn_flusher() {
 
 /// Force an immediate flush of everything currently pending — used on graceful
 /// shutdown so a redeploy/restart doesn't drop the interactions recorded since the
-/// last periodic flush. No-op if nothing is pending.
-pub async fn flush_now() {
-    flush().await;
+/// last periodic flush, and by the `/quote` backfill to fold one batch at a time.
+/// No-op if nothing is pending. Returns false if the digest could not be updated.
+pub async fn flush_now() -> bool {
+    flush().await
 }
 
 /// Drain the pending messages and fold them into the digest. Serialized; the batch
-/// is re-queued on failure so a transient API error doesn't lose it.
-async fn flush() {
+/// is re-queued on failure so a transient API error doesn't lose it. Returns whether
+/// the digest is up to date (an empty queue counts as success).
+async fn flush() -> bool {
     let _guard = FLUSH_LOCK.lock().await;
 
     let batch = {
         let mut pending = PENDING.lock().unwrap();
         if pending.is_empty() {
-            return;
+            return true;
         }
         std::mem::take(&mut *pending)
     };
@@ -172,8 +187,10 @@ async fn flush() {
                     "memory: digest updated ({} message(s) folded in)",
                     batch.len()
                 );
+                true
             } else {
                 println!("memory: failed to write {MEMORY_FILE}");
+                false
             }
         }
         Err(e) => {
@@ -186,6 +203,7 @@ async fn flush() {
                 restored.remove(0);
             }
             *pending = restored;
+            false
         }
     }
 }

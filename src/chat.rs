@@ -191,6 +191,7 @@ Return an UPDATED Markdown digest that folds the salient new information into th
 Group it by user with a `## <display name> (uid <numeric id>)` heading per person, followed by concise bullet points. \
 Merge a message into the existing section with the same uid (updating that heading's display name if it changed); never create a second section for a uid that already has one, and never merge two different uids even if their display names are identical. \
 Attribute each fact only to the uid of the line it came from — do not carry one person's facts onto another. \
+A line whose text starts with `[saved quote]` is something that person said which the server saved with /quote as memorable — record it as a notable quote or running joke of theirs, not as something addressed to WanBot. \
 For each person capture durable, salient facts: their recurring interests and the kinds of questions they ask, their sentiment toward WanBot (explicitly call out anyone who is hostile, insulting, or negative toward the bot), running jokes, strong opinions, and preferences. \
 Merge with the existing memory instead of duplicating, drop stale or trivial details, and never invent anything the messages don't support. Keep the entire digest well under 800 words. \
 Respond with ONLY the Markdown digest — no preamble, no commentary, no code fences.";

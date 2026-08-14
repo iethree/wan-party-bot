@@ -40,6 +40,10 @@ impl EventHandler for Handler {
         commands::register(&ctx).await;
 
         ctx.set_activity(Some(ActivityData::playing(status_info)));
+
+        // One-time-per-database ingest of the pre-memory quotes backlog. Needs a
+        // connected client to resolve author names, so it lives here, not in main().
+        quote::spawn_quote_backfill(ctx.clone());
     }
 
     async fn message(&self, ctx: Context, message: Message) {
