@@ -8,6 +8,7 @@
 use crate::blacklist::is_blacklisted_channel;
 use crate::botself;
 use crate::discord_util;
+use crate::jev;
 use once_cell::sync::Lazy;
 use rand::seq::SliceRandom;
 use serde_json::{json, Value};
@@ -17,7 +18,98 @@ use std::sync::Mutex;
 const MODEL: &str = "claude-sonnet-5";
 const MAX_TOKENS: u32 = 4096;
 
+/// Reacted instead of the feature's usual error emoji when the API is telling us
+/// to go pay the bill — the failure is a credit card, not a bug, and it's worth
+/// being able to tell those apart from Discord.
+const PAYMENT_EMOJI: &str = "💰";
+
 static HTTP: Lazy<reqwest::Client> = Lazy::new(reqwest::Client::new);
+
+/// Why an Anthropic call failed, split only as far as the callers care: everything
+/// is a shrug except a billing problem, which gets its own emoji.
+#[derive(Debug)]
+pub enum ChatError {
+    /// The request was refused over money: no credits, dead card, spend cap hit.
+    /// Retrying won't help until someone tops the account up.
+    Payment(String),
+    Other(String),
+}
+
+impl ChatError {
+    pub fn is_payment(&self) -> bool {
+        matches!(self, ChatError::Payment(_))
+    }
+}
+
+impl std::fmt::Display for ChatError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ChatError::Payment(m) | ChatError::Other(m) => f.write_str(m),
+        }
+    }
+}
+
+/// Sort a non-2xx response into [`ChatError`].
+///
+/// Anthropic signals a money problem two different ways: a `402 billing_error`,
+/// and — when the key is valid but the account is out of credits — a plain `400`
+/// whose `error.type` is `invalid_request_error` and whose message is about the
+/// credit balance. Catch both, since the second is the one that actually shows up
+/// when the bot stops working.
+fn classify_error(status: reqwest::StatusCode, body: &str) -> ChatError {
+    let message = format!("anthropic error {status}: {body}");
+
+    let error_type = serde_json::from_str::<Value>(body)
+        .ok()
+        .and_then(|v| {
+            v.get("error")
+                .and_then(|e| e.get("type"))
+                .and_then(|t| t.as_str())
+                .map(str::to_string)
+        })
+        .unwrap_or_default();
+
+    let lower = body.to_lowercase();
+    let about_money = lower.contains("credit balance")
+        || lower.contains("purchase credits")
+        || lower.contains("billing")
+        || lower.contains("payment required")
+        || lower.contains("insufficient credit");
+
+    if status.as_u16() == 402 || error_type == "billing_error" || about_money {
+        ChatError::Payment(message)
+    } else {
+        ChatError::Other(message)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use reqwest::StatusCode;
+
+    #[test]
+    fn out_of_credits_is_a_payment_error() {
+        // The real 400 the API returns once the account runs dry — note the type is
+        // `invalid_request_error`, so the status code alone isn't enough.
+        let body = r#"{"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."}}"#;
+        assert!(classify_error(StatusCode::BAD_REQUEST, body).is_payment());
+
+        let body = r#"{"type":"error","error":{"type":"billing_error","message":"nope"}}"#;
+        assert!(classify_error(StatusCode::PAYMENT_REQUIRED, body).is_payment());
+    }
+
+    #[test]
+    fn ordinary_failures_are_not_payment_errors() {
+        let body = r#"{"type":"error","error":{"type":"rate_limit_error","message":"Number of requests has exceeded your rate limit."}}"#;
+        assert!(!classify_error(StatusCode::TOO_MANY_REQUESTS, body).is_payment());
+
+        let body = r#"{"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}"#;
+        assert!(!classify_error(StatusCode::from_u16(529).unwrap(), body).is_payment());
+
+        assert!(!classify_error(StatusCode::INTERNAL_SERVER_ERROR, "").is_payment());
+    }
+}
 
 fn today_mmdd() -> String {
     chrono::Local::now().format("%m-%d").to_string()
@@ -41,7 +133,7 @@ fn extract_text(response: &Value) -> String {
 
 /// `ai_client.messages.create(...)` followed by `_extract_text`. Returns Err on any
 /// failure, mirroring the SDK raising (callers wrap in try/except).
-async fn create_message(system: &str, messages: Vec<Value>) -> Result<String, String> {
+async fn create_message(system: &str, messages: Vec<Value>) -> Result<String, ChatError> {
     let api_key = std::env::var("ANTHROPIC_API_KEY").unwrap_or_default();
     let body = json!({
         "model": MODEL,
@@ -57,13 +149,16 @@ async fn create_message(system: &str, messages: Vec<Value>) -> Result<String, St
         .json(&body)
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| ChatError::Other(e.to_string()))?;
     if !resp.status().is_success() {
         let status = resp.status();
         let text = resp.text().await.unwrap_or_default();
-        return Err(format!("anthropic error {status}: {text}"));
+        return Err(classify_error(status, &text));
     }
-    let value: Value = resp.json().await.map_err(|e| e.to_string())?;
+    let value: Value = resp
+        .json()
+        .await
+        .map_err(|e| ChatError::Other(e.to_string()))?;
     Ok(extract_text(&value))
 }
 
@@ -131,7 +226,7 @@ fn get_comeback(msg: &str) -> String {
     comebacks.choose(&mut rng).unwrap().clone()
 }
 
-async fn get_ai_comeback(msg: &str) -> Result<String, String> {
+async fn get_ai_comeback(msg: &str) -> Result<String, ChatError> {
     let personality = get_random_personality();
     println!("answering as a {personality}");
     let text = create_message(
@@ -143,7 +238,7 @@ async fn get_ai_comeback(msg: &str) -> Result<String, String> {
     Ok(text)
 }
 
-async fn get_tldr_response(msg: &str) -> Result<String, String> {
+async fn get_tldr_response(msg: &str) -> Result<String, ChatError> {
     let text = create_message(
         &get_personality(),
         vec![json!({"role":"user","content": format!("write an extremely short and mildly flippant tldr summary of: {msg}")})],
@@ -153,7 +248,7 @@ async fn get_tldr_response(msg: &str) -> Result<String, String> {
     Ok(text)
 }
 
-async fn get_ai_kindness(msg: &str) -> Result<String, String> {
+async fn get_ai_kindness(msg: &str) -> Result<String, ChatError> {
     let system = format!(
         "Your name is WanBot and you are a kind, empathetic, sincere, tender-hearted therapist dealing with a fragile patient{}",
         get_conditional_prompts()
@@ -167,7 +262,7 @@ async fn get_ai_kindness(msg: &str) -> Result<String, String> {
     Ok(text)
 }
 
-async fn get_ai_recap(username: &str, messages_text: &str) -> Result<String, String> {
+async fn get_ai_recap(username: &str, messages_text: &str) -> Result<String, ChatError> {
     let system_prompt = "You are a peppy, energetic AI assistant that generates 'Year in Review' style recaps, similar to Spotify Wrapped or big tech annual summaries. Your tone should be enthusiastic, using emojis and corporate-friendly but fun language. You're aware that these recaps are kind of annoying, and you're subtly ironic about the whole thing.";
     let user_prompt = format!(
         "Here is a collection of discord messages from user '{username}' over the past year. Please generate a very short and snappy recap of what they have been talking about. Highlight key themes, recurring jokes, or specific interests. The recap MUST be less than 500 words. \n\nMessages:\n{messages_text}"
@@ -183,7 +278,7 @@ async fn get_ai_recap(username: &str, messages_text: &str) -> Result<String, Str
 
 /// Fold a batch of new messages into the long-term memory digest. Lives here so it
 /// can reuse the Anthropic client; driven by [`crate::memory`].
-pub(crate) async fn summarize_memory(existing: &str, transcript: &str) -> Result<String, String> {
+pub(crate) async fn summarize_memory(existing: &str, transcript: &str) -> Result<String, ChatError> {
     let system = "You maintain WanBot's long-term memory of the people in its Discord server. \
 You are given the CURRENT MEMORY (a Markdown digest, possibly empty) and a batch of NEW MESSAGES, each line prefixed with the speaker as `<display name> (uid <numeric id>)`. \
 The uid is the person's identity — display names change over time and two different people can use the same one, so NEVER identify anyone by display name. \
@@ -204,7 +299,7 @@ Respond with ONLY the Markdown digest — no preamble, no commentary, no code fe
     create_message(system, vec![json!({"role":"user","content": user})]).await
 }
 
-async fn get_person_response(personality: &str, msg: &str) -> Result<String, String> {
+async fn get_person_response(personality: &str, msg: &str) -> Result<String, ChatError> {
     let text = create_message(
         &format!("You are {personality}"),
         vec![json!({"role":"user","content": format!("respond to someone saying {msg}")})],
@@ -310,12 +405,38 @@ async fn react(ctx: &Context, msg: &Message, emoji: &str) {
         .await;
 }
 
+/// React to a failed AI call: 💰 when it was a billing problem, otherwise the
+/// emoji this particular feature normally uses to shrug.
+async fn react_error(ctx: &Context, msg: &Message, err: &ChatError, usual: &str) {
+    react(
+        ctx,
+        msg,
+        if err.is_payment() { PAYMENT_EMOJI } else { usual },
+    )
+    .await;
+}
+
+/// The message with the bot's own mention removed, so Jev is handed the question
+/// and not the plumbing around it.
+fn strip_bot_mention(content: &str) -> String {
+    let id = botself::bot_id();
+    content
+        .replace(&format!("<@{id}>"), "")
+        .replace(&format!("<@!{id}>"), "")
+        .trim()
+        .to_string()
+}
+
 // ----------------------------------------------------------------------------
 // Public async entrypoints (called from main.py's on_message)
 // ----------------------------------------------------------------------------
 
 /// `get_bot_response(message)` — the conversational reply, with shared context.
-async fn get_bot_response(ctx: &Context, message: &Message) -> Result<String, String> {
+/// `quoted` is the message being replied to, already fetched by the caller.
+async fn get_bot_response(
+    message: &Message,
+    quoted: Option<&Message>,
+) -> Result<String, ChatError> {
     // The context buffer is shared by everyone in the server, so every user turn
     // must name its speaker — otherwise the model reads the whole buffer as one
     // conversation with one person and pins everyone's memories on whoever is
@@ -327,7 +448,6 @@ async fn get_bot_response(ctx: &Context, message: &Message) -> Result<String, St
         message.content
     );
 
-    let quoted = get_quoted_msg(ctx, message).await;
     let mut user_content = msg.clone();
     if let Some(q) = &quoted {
         user_content.push_str(&format!(
@@ -404,6 +524,11 @@ pub async fn comeback(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("error getting ai comeback");
             println!("{e}");
+            // This one has a real non-AI fallback, so there's no error emoji to
+            // swap — react 💰 alongside it so a billing stop still shows up.
+            if e.is_payment() {
+                react(ctx, message, PAYMENT_EMOJI).await;
+            }
             get_comeback(&quoted.content)
         }
     };
@@ -432,7 +557,7 @@ pub async fn kindness(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("error getting ai kindness");
             println!("{e}");
-            react(ctx, message, "❤️").await;
+            react_error(ctx, message, &e, "❤️").await;
             return;
         }
     };
@@ -462,7 +587,7 @@ pub async fn respond_as(ctx: &Context, message: &Message, personality: &str) {
         Err(e) => {
             println!("error getting ai comeback");
             println!("{e}");
-            react(ctx, message, "🫣").await;
+            react_error(ctx, message, &e, "🫣").await;
             return;
         }
     };
@@ -539,7 +664,7 @@ pub async fn recap(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("Error generating recap: {e}");
             typing.stop();
-            react(ctx, message, "😵").await;
+            react_error(ctx, message, &e, "😵").await;
             return;
         }
     };
@@ -570,6 +695,10 @@ pub async fn tldr(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("error getting ai tldr response");
             println!("{e}");
+            // Same as /comeback: a text fallback, plus 💰 when it's the bill.
+            if e.is_payment() {
+                react(ctx, message, PAYMENT_EMOJI).await;
+            }
             get_comeback(&quoted.content)
         }
     };
@@ -597,15 +726,39 @@ pub async fn bot_response(ctx: &Context, message: &Message) {
     // The original wraps BOTH the AI call and the chunked replies in one try/except,
     // so a failure sending any reply also lands on the 🤷‍♀️ fallback.
     let typing = message.channel_id.start_typing(&ctx.http);
-    let result = get_bot_response(ctx, message).await;
+    let quoted = get_quoted_msg(ctx, message).await;
+
+    // Route before generating. A plain yes/no question doesn't need Claude to write
+    // a paragraph about it — Jev decides whether it is one and what the answer is in
+    // a single small call. Anything else, and any failure at all, falls through to
+    // Claude below.
+    if let Some(answer) = jev_answer(message, quoted.as_ref()).await {
+        typing.stop();
+        // Keep the shared buffer coherent: a follow-up ("wait, why?") lands on
+        // Claude and should be able to see what was just asked and answered.
+        add_to_context(
+            "user",
+            &format!(
+                "{} (uid {}): {}",
+                discord_util::display_name(message),
+                message.author.id.get(),
+                message.content
+            ),
+        );
+        add_to_context("assistant", answer);
+        let _ = message.reply_ping(&ctx.http, answer).await;
+        return;
+    }
+
+    let result = get_bot_response(message, quoted.as_ref()).await;
     typing.stop();
 
-    let outcome: Result<(), String> = match result {
+    let outcome: Result<(), ChatError> = match result {
         Ok(msg) => {
             let mut res = Ok(());
             for chunk in auto_split_messages(&msg, 2000) {
                 if let Err(e) = message.reply_ping(&ctx.http, chunk).await {
-                    res = Err(e.to_string());
+                    res = Err(ChatError::Other(e.to_string()));
                     break;
                 }
             }
@@ -617,7 +770,39 @@ pub async fn bot_response(ctx: &Context, message: &Message) {
     if let Err(e) = outcome {
         println!("error getting ai bot response");
         println!("{e}");
-        react(ctx, message, "🤷‍♀️").await;
+        react_error(ctx, message, &e, "🤷‍♀️").await;
+    }
+}
+
+/// Jev's verdict on `message`, as the reply to send — `None` whenever this isn't
+/// confidently a yes/no question, or Jev couldn't be reached, in which case the
+/// caller carries on to Claude.
+async fn jev_answer(message: &Message, quoted: Option<&Message>) -> Option<&'static str> {
+    let question = strip_bot_mention(&message.content);
+    if question.is_empty() {
+        return None;
+    }
+
+    match jev::yes_no_verdict(&question, quoted.map(|q| q.content.as_str())).await {
+        Ok(v) if v.is_yes_no_question() => {
+            let answer = v.phrase_answer();
+            println!(
+                "jev: yes/no question (p={:.2}), answer yes p={:.2} -> {answer}",
+                v.is_yes_no, v.answer_yes
+            );
+            Some(answer)
+        }
+        Ok(v) => {
+            println!(
+                "jev: not a yes/no question (p={:.2}), handing to claude",
+                v.is_yes_no
+            );
+            None
+        }
+        Err(e) => {
+            println!("jev: {e} — handing to claude");
+            None
+        }
     }
 }
 
@@ -646,6 +831,10 @@ pub async fn appropriate_reaction(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("error getting ai reaction");
             println!("{e}");
+            // This feature *is* a reaction, so a billing stop can say so directly.
+            if e.is_payment() {
+                react(ctx, message, PAYMENT_EMOJI).await;
+            }
         }
     }
 }

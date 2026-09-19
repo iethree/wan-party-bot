@@ -30,6 +30,7 @@ pub mod db;
 pub mod discord_util;
 pub mod error_messages;
 pub mod giphy;
+pub mod jev;
 pub mod jokes;
 pub mod leaderboards;
 pub mod lexical_analysis;
