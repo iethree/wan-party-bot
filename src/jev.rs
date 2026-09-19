@@ -65,12 +65,16 @@ impl YesNoVerdict {
     }
 }
 
-/// Ask Jev both questions about `question` in one request. `replying_to` is the
-/// content of the message being replied to, when there is one — "is that true?"
-/// can't be answered without it.
+/// Ask Jev both questions about `question` in one request.
+///
+/// `replying_to` is the content of the message being replied to, when there is one
+/// — "is that true?" can't be answered without it. `memory` is the long-term digest
+/// ([`crate::memory::current`]), the same context Claude gets, so a question that
+/// turns on who someone is doesn't get answered cold; pass `""` for none.
 pub async fn yes_no_verdict(
     question: &str,
     replying_to: Option<&str>,
+    memory: &str,
 ) -> Result<YesNoVerdict, String> {
     let api_key = std::env::var("JEV_API_KEY").unwrap_or_default();
     if api_key.is_empty() {
@@ -78,10 +82,15 @@ pub async fn yes_no_verdict(
     }
 
     // Named fields rather than one blob, so the questions can point at `message`
-    // and leave `replying_to` as context: https://docs.typesafe.ai/concepts/state
+    // and leave the rest as context: https://docs.typesafe.ai/concepts/state
+    // Jev ingests the state once and evaluates both questions against it, so the
+    // digest is paid for once per request, not once per question.
     let mut state = json!({ "message": question });
     if let Some(quoted) = replying_to {
         state["replying_to"] = json!(quoted);
+    }
+    if !memory.trim().is_empty() {
+        state["memory"] = json!(memory);
     }
 
     let body = json!({
@@ -98,7 +107,7 @@ pub async fn yes_no_verdict(
             },
             "answer_yes": {
                 "type": "noul",
-                "instructions": "Assuming `message` is a yes/no question, is the correct answer to it yes?",
+                "instructions": "Assuming `message` is a yes/no question, is the correct answer to it yes? `memory`, when present, is what the bot remembers about the people in this Discord server, in sections keyed by user id — lean on it when the question turns on who someone is, what they like, or what they've said before, and ignore it otherwise.",
                 "criteria": {
                     "true": "Yes — the thing being asked about is true, correct, advisable, or the case",
                     "false": "No — the thing being asked about is false, incorrect, inadvisable, or not the case"

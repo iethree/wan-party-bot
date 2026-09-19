@@ -38,7 +38,9 @@ so run it from the repo root.
 
 When someone @-mentions the bot, TypeSafe's Jev (`src/jev.rs`) gets the message
 first and decides two things in one call: is this a yes/no question, and if so is
-the answer yes. A confident yes/no question is answered on the spot; everything
+the answer yes. It sees the message, whatever is being replied to, and the same
+long-term memory digest Claude gets, so it can answer a question that turns on who
+someone is. A confident yes/no question is answered on the spot; everything
 else goes to Claude (`src/chat.rs`) as before. Without `JEV_API_KEY` — or on
 any Jev failure — every message falls through to Claude, so the bot keeps working.
 

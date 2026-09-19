@@ -783,7 +783,10 @@ async fn jev_answer(message: &Message, quoted: Option<&Message>) -> Option<&'sta
         return None;
     }
 
-    match jev::yes_no_verdict(&question, quoted.map(|q| q.content.as_str())).await {
+    // Same digest Claude gets, so Jev isn't answering "would they like this?" cold.
+    let memory = crate::memory::current();
+
+    match jev::yes_no_verdict(&question, quoted.map(|q| q.content.as_str()), &memory).await {
         Ok(v) if v.is_yes_no_question() => {
             let answer = v.phrase_answer();
             println!(
