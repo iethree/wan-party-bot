@@ -51,22 +51,32 @@ impl std::fmt::Display for ChatError {
 
 /// Sort a non-2xx response into [`ChatError`].
 ///
-/// Anthropic signals a money problem two different ways: a `402 billing_error`,
-/// and — when the key is valid but the account is out of credits — a plain `400`
-/// whose `error.type` is `invalid_request_error` and whose message is about the
-/// credit balance. Catch both, since the second is the one that actually shows up
-/// when the bot stops working.
+/// "Out of money" wears four different hats, and only one of them is a 402:
+///   * `402 billing_error` — a payment details problem.
+///   * `400 invalid_request_error` saying the credit balance is too low — what a
+///     prepaid account returns once it runs dry.
+///   * `400 invalid_request_error` — usage hit an org or workspace spend limit
+///     someone set in the Console.
+///   * `429 rate_limit_error` — the tier's *monthly* spend cap. Identical in shape
+///     to an ordinary rate limit except for `error.details.error_code`, which the
+///     docs name as the way to tell the two apart. It carries no `retry-after` and
+///     keeps failing until the 1st of the next month, so treating it as a retryable
+///     rate limit would be wrong.
+///
+/// <https://platform.claude.com/docs/en/api/errors>
 fn classify_error(status: reqwest::StatusCode, body: &str) -> ChatError {
     let message = format!("anthropic error {status}: {body}");
 
-    let error_type = serde_json::from_str::<Value>(body)
-        .ok()
-        .and_then(|v| {
-            v.get("error")
-                .and_then(|e| e.get("type"))
-                .and_then(|t| t.as_str())
-                .map(str::to_string)
-        })
+    let parsed = serde_json::from_str::<Value>(body).unwrap_or(Value::Null);
+    let error = parsed.get("error");
+    let error_type = error
+        .and_then(|e| e.get("type"))
+        .and_then(|t| t.as_str())
+        .unwrap_or_default();
+    let error_code = error
+        .and_then(|e| e.get("details"))
+        .and_then(|d| d.get("error_code"))
+        .and_then(|c| c.as_str())
         .unwrap_or_default();
 
     let lower = body.to_lowercase();
@@ -74,9 +84,17 @@ fn classify_error(status: reqwest::StatusCode, body: &str) -> ChatError {
         || lower.contains("purchase credits")
         || lower.contains("billing")
         || lower.contains("payment required")
-        || lower.contains("insufficient credit");
+        || lower.contains("insufficient credit")
+        || lower.contains("spend limit")
+        || lower.contains("spend cap")
+        || lower.contains("usage threshold")
+        || lower.contains("usage limits");
 
-    if status.as_u16() == 402 || error_type == "billing_error" || about_money {
+    if status.as_u16() == 402
+        || error_type == "billing_error"
+        || error_code == "enforced_spend_limit_reached"
+        || about_money
+    {
         ChatError::Payment(message)
     } else {
         ChatError::Other(message)
@@ -97,6 +115,21 @@ mod tests {
 
         let body = r#"{"type":"error","error":{"type":"billing_error","message":"nope"}}"#;
         assert!(classify_error(StatusCode::PAYMENT_REQUIRED, body).is_payment());
+    }
+
+    #[test]
+    fn monthly_spend_cap_is_a_payment_error_despite_looking_like_a_rate_limit() {
+        // Verbatim from the docs: a 429 `rate_limit_error` with no `retry-after`
+        // that keeps failing until the 1st. `error_code` is the only real tell.
+        let body = r#"{"type":"error","error":{"type":"rate_limit_error","message":"You have reached your API usage limits: your organization has crossed its monthly API usage threshold, set based on your organization's API tier. You will regain access on 2026-09-01 at 00:00 UTC.","details":{"error_code":"enforced_spend_limit_reached"}}}"#;
+        assert!(classify_error(StatusCode::TOO_MANY_REQUESTS, body).is_payment());
+    }
+
+    #[test]
+    fn self_set_spend_limit_is_a_payment_error() {
+        // A limit set in the Console comes back as a 400, not a 402.
+        let body = r#"{"type":"error","error":{"type":"invalid_request_error","message":"Your organization has reached its monthly spend limit."}}"#;
+        assert!(classify_error(StatusCode::BAD_REQUEST, body).is_payment());
     }
 
     #[test]
