@@ -1,23 +1,55 @@
-name: deploy-test
+name: deploy
 
+# Build the Linux binaries here (the server is too small to compile them), copy
+# them up, then run scripts/deploy.sh on the server to swap them in and restart.
+# Only master: the server resets to origin/master, so a binary built from any
+# other branch wouldn't match the code it runs beside.
 on:
   push:
     branches:
-      - main
       - master
+
+# Two quick pushes shouldn't race each other's uploads.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.5.0
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: rustup target add x86_64-unknown-linux-musl
+      - uses: mlugg/setup-zig@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: ./build.sh
+
+      - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: Deploy
-        run: ssh -o "StrictHostKeyChecking no" ryan@${INSTANCE_IP} screen -d -m ./deploy.sh
-    env:
-      SSH_KEY: "${{ secrets.SSH_KEY}}"
-      INSTANCE_IP: "${{ secrets.INSTANCE_IP }}"
-      ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"
+      - name: Configure ssh
+        run: |
+          cat >> ~/.ssh/config <<EOF
+          Host partybot
+            HostName ${{ secrets.INSTANCE_IP }}
+            User ryan
+            StrictHostKeyChecking accept-new
+          EOF
 
+      - name: Upload binaries
+        run: |
+          ssh partybot 'mkdir -p ~/wan-party-bot/dist'
+          for bin in wan-party-bot-x86_64 trigger_poll-x86_64; do
+            scp "dist/$bin" "partybot:wan-party-bot/dist/$bin.new"
+          done
+
+      - name: Deploy
+        run: ssh partybot 'bash -s' < scripts/deploy.sh

@@ -15,3 +15,5 @@ venv/
 env/
 .poo
 .DS_Store
+# release binaries — built and uploaded by CI, see build.sh
+/dist/

@@ -17,6 +17,9 @@ use std::sync::Mutex;
 
 const MODEL: &str = "claude-sonnet-5-5";
 const MAX_TOKENS: u32 = 4096;
+/// Sonnet 5.5 thinks by default and those tokens count against `MAX_TOKENS`; the
+/// model's default (`high`) is more deliberation than Discord banter needs.
+const EFFORT: &str = "medium";
 
 /// Reacted instead of the feature's usual error emoji when the API is telling us
 /// to go pay the bill — the failure is a credit card, not a bug, and it's worth
@@ -171,6 +174,7 @@ async fn create_message(system: &str, messages: Vec<Value>) -> Result<String, Ch
     let body = json!({
         "model": MODEL,
         "max_tokens": MAX_TOKENS,
+        "output_config": { "effort": EFFORT },
         "system": system,
         "messages": messages,
     });

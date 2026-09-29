@@ -34,6 +34,13 @@ DISCORD_TOKEN=TOKEN_HERE cargo run --release --bin trigger_poll
 It still reads the `data/`, `corpora/`, and `wanparty.db` files by relative path,
 so run it from the repo root.
 
+## Deploy
+
+Push to `master`. GitHub Actions (`.github/workflows/deploy.yml`) builds both
+binaries with `build.sh`, copies them to the server, and runs `scripts/deploy.sh`
+there: back up the db, reset to `origin/master`, swap the binaries in, restart
+`partybot`. Binaries aren't committed — `dist/` is gitignored.
+
 ## AI routing
 
 When someone @-mentions the bot, TypeSafe's Jev (`src/jev.rs`) gets the message
