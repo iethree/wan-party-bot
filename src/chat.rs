@@ -15,7 +15,7 @@ use serde_json::{json, Value};
 use serenity::all::{Context, Message};
 use std::sync::Mutex;
 
-const MODEL: &str = "claude-sonnet-5";
+const MODEL: &str = "claude-sonnet-5-5";
 const MAX_TOKENS: u32 = 4096;
 
 /// Reacted instead of the feature's usual error emoji when the API is telling us
