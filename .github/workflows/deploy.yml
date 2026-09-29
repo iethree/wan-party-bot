@@ -20,6 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: build.rs bakes in the version as `git rev-list --count
+          # HEAD`, which is 1 in the default shallow clone.
+          fetch-depth: 0
 
       - name: Install toolchain
         run: rustup target add x86_64-unknown-linux-musl
