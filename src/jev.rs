@@ -2,10 +2,11 @@
 //! calibrated probability instead of prose.
 //!
 //! Where [`crate::chat`] asks Claude to *write* something, Jev just decides. We use
-//! it for the one job a chat model is overkill for: working out whether someone
-//! actually asked a yes/no question and, if they did, what the answer is.
+//! it for the jobs a chat model is overkill for: working out whether someone
+//! actually asked a yes/no question and, if they did, what the answer is; and
+//! picking an emoji to react to a message with.
 //!
-//! Both judgments ride in a single request. `answer_yes` is speculative — it is
+//! The yes/no judgments ride in a single request. `answer_yes` is speculative — it is
 //! asked unconditionally and simply ignored when `is_yes_no` comes back low —
 //! which is the documented way to avoid a second round trip:
 //! <https://docs.typesafe.ai/patterns/fan-out>.
@@ -13,6 +14,7 @@
 //! Reads `JEV_API_KEY` from the environment. (The TypeSafe SDKs default to
 //! `TYPESAFE_API_KEY`; we call the REST endpoint directly, so the name is ours.)
 
+use crate::top_emoji::TOP_EMOJI;
 use once_cell::sync::Lazy;
 use serde_json::{json, Value};
 use std::time::Duration;
@@ -25,6 +27,12 @@ const MODEL: &str = "jev-latest";
 /// wrong "yes" in place of a real conversation is far more annoying than a
 /// conversational reply to something that could have been answered yes/no.
 const IS_YES_NO_THRESHOLD: f64 = 0.8;
+
+/// How much of the probability the top emoji needs before we react with it. Below
+/// this, no reaction at all. Deliberately low: near-synonyms (🎂/🎉/🥳) split the
+/// probability, so even an obvious pick often lands around 0.5 — this only filters
+/// out messages where Jev has no real idea (a flat spread across dozens of emoji).
+const REACTION_THRESHOLD: f64 = 0.1;
 
 /// A routing call blocks every reply behind it, and every failure falls through to
 /// Claude anyway, so don't wait around.
@@ -76,11 +84,6 @@ pub async fn yes_no_verdict(
     replying_to: Option<&str>,
     memory: &str,
 ) -> Result<YesNoVerdict, String> {
-    let api_key = std::env::var("JEV_API_KEY").unwrap_or_default();
-    if api_key.is_empty() {
-        return Err("JEV_API_KEY is not set".to_string());
-    }
-
     // Named fields rather than one blob, so the questions can point at `message`
     // and leave the rest as context: https://docs.typesafe.ai/concepts/state
     // Jev ingests the state once and evaluates both questions against it, so the
@@ -116,11 +119,84 @@ pub async fn yes_no_verdict(
         }
     });
 
+    let value = ask(&body).await?;
+
+    Ok(YesNoVerdict {
+        is_yes_no: noul(&value, "is_yes_no")?,
+        answer_yes: noul(&value, "answer_yes")?,
+    })
+}
+
+/// Jev's pick of a reaction for a message: the most likely emoji and how much of
+/// the probability it got.
+pub struct ReactionPick {
+    pub emoji: &'static str,
+    pub probability: f64,
+}
+
+impl ReactionPick {
+    /// Whether Jev is sure enough of this emoji to actually react with it.
+    pub fn is_confident(&self) -> bool {
+        self.probability >= REACTION_THRESHOLD
+    }
+}
+
+/// Ask Jev which of [`TOP_EMOJI`] best fits as a reaction to `message`.
+///
+/// One Choice over all 200 options (the limit is 255), rather than a shortlist:
+/// it's a few tokens per option and the model can't pick what it isn't shown.
+/// Near-synonyms (😂/🤣, the dozen hearts) do split the probability between them,
+/// which is why [`REACTION_THRESHOLD`] is so low.
+pub async fn reaction(message: &str) -> Result<ReactionPick, String> {
+    let criteria: serde_json::Map<String, Value> = TOP_EMOJI
+        .iter()
+        .map(|(name, emoji)| (name.to_string(), json!(emoji)))
+        .collect();
+
+    let body = json!({
+        "model": MODEL,
+        "state": { "message": message },
+        "questions": {
+            "reaction": {
+                "type": "choice",
+                "instructions": "A friend in a casual gaming Discord server is reacting to `message` with a single emoji. Which emoji would they most naturally react with?",
+                "criteria": criteria
+            }
+        }
+    });
+
+    let value = ask(&body).await?;
+    let probabilities = value
+        .get("answers")
+        .and_then(|a| a.get("reaction"))
+        .and_then(|a| a.get("probabilities"))
+        .and_then(|p| p.as_object())
+        .ok_or_else(|| format!("no choice answer for 'reaction' in {value}"))?;
+
+    // Take the max ourselves rather than trusting `choice`, so the emoji and the
+    // probability it's judged on can't disagree.
+    TOP_EMOJI
+        .iter()
+        .filter_map(|(name, emoji)| {
+            let p = probabilities.get(*name)?.as_f64()?;
+            Some(ReactionPick { emoji, probability: p })
+        })
+        .max_by(|a, b| a.probability.total_cmp(&b.probability))
+        .ok_or_else(|| format!("no known emoji in {value}"))
+}
+
+/// POST one System One request and hand back the parsed response.
+async fn ask(body: &Value) -> Result<Value, String> {
+    let api_key = std::env::var("JEV_API_KEY").unwrap_or_default();
+    if api_key.is_empty() {
+        return Err("JEV_API_KEY is not set".to_string());
+    }
+
     let resp = HTTP
         .post(ENDPOINT)
         .bearer_auth(api_key)
         .header("content-type", "application/json")
-        .json(&body)
+        .json(body)
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -129,12 +205,7 @@ pub async fn yes_no_verdict(
         let text = resp.text().await.unwrap_or_default();
         return Err(format!("typesafe error {status}: {text}"));
     }
-    let value: Value = resp.json().await.map_err(|e| e.to_string())?;
-
-    Ok(YesNoVerdict {
-        is_yes_no: noul(&value, "is_yes_no")?,
-        answer_yes: noul(&value, "answer_yes")?,
-    })
+    resp.json().await.map_err(|e| e.to_string())
 }
 
 /// Pull one `answers.<id>.noul` probability out of the response.

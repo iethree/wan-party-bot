@@ -842,35 +842,24 @@ async fn jev_answer(message: &Message, quoted: Option<&Message>) -> Option<&'sta
     }
 }
 
-/// `appropriate_reaction(message)` — the AI-chosen emoji reaction.
+/// `appropriate_reaction(message)` — an emoji reaction Jev picks from the 200
+/// most-used emoji. Only reacts when Jev is confident in its pick; a low-confidence
+/// pick or a Jev failure means no reaction at all.
 pub async fn appropriate_reaction(ctx: &Context, message: &Message) {
-    let prompt = format!(
-        "choose a single emoji as a reaction to the following message: {}",
-        message.content
-    );
-    println!(
-        "getting ai reaction for message: {}",
-        message.content
-    );
-    let system = format!(
-        "{}\n\nOnly respond with a single emoji character, nothing else.",
-        get_personality()
-    );
-    match create_message(&system, vec![json!({"role":"user","content": prompt})]).await {
-        Ok(text) => {
-            let emoji = text.trim().to_string();
-            println!("reacting with {emoji}");
-            let _ = message
-                .react(&ctx.http, discord_util::unicode(&emoji))
-                .await;
+    if message.content.trim().is_empty() {
+        return;
+    }
+    match jev::reaction(&message.content).await {
+        Ok(pick) if pick.is_confident() => {
+            println!("jev reaction: {} (p={:.2})", pick.emoji, pick.probability);
+            react(ctx, message, pick.emoji).await;
         }
-        Err(e) => {
-            println!("error getting ai reaction");
-            println!("{e}");
-            // This feature *is* a reaction, so a billing stop can say so directly.
-            if e.is_payment() {
-                react(ctx, message, PAYMENT_EMOJI).await;
-            }
+        Ok(pick) => {
+            println!(
+                "jev reaction: best was {} (p={:.2}), not confident enough to react",
+                pick.emoji, pick.probability
+            );
         }
+        Err(e) => println!("jev reaction: {e}"),
     }
 }

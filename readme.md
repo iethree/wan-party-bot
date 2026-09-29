@@ -44,5 +44,9 @@ someone is. A confident yes/no question is answered on the spot; everything
 else goes to Claude (`src/chat.rs`) as before. Without `JEV_API_KEY` — or on
 any Jev failure — every message falls through to Claude, so the bot keeps working.
 
+The random emoji reaction (7% of messages) is Jev's too: it picks from the 200
+most-used emoji (`src/top_emoji.rs`) and only reacts when its top pick gets at
+least 10% of the probability. Otherwise, or without `JEV_API_KEY`, no reaction.
+
 Claude failures react with each feature's usual shrug emoji, except billing
 failures (out of credits, dead card), which react 💰.
