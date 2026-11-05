@@ -47,6 +47,7 @@ pub mod sing;
 pub mod text_util;
 pub mod thinking;
 pub mod top_emoji;
+pub mod xkcd;
 
 /// Global, process-wide state captured at gateway READY, mirroring how the Python
 /// code reaches for `client.user`. `main.py` checks `str(client.user.id) in content`

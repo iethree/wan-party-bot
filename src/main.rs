@@ -9,7 +9,7 @@ use serenity::Client;
 use wan_party_bot::blacklist::is_blacklisted_channel;
 use wan_party_bot::{
     botself, chat, client as client_cfg, commands, db, discord_util, memory, message_handler,
-    quote,
+    quote, xkcd,
 };
 
 fn today_mmdd() -> String {
@@ -85,6 +85,10 @@ impl EventHandler for Handler {
         }
         if message.content.starts_with("/recap") {
             chat::recap(&ctx, &message).await;
+            return;
+        }
+        if message.content.starts_with("/xkcd") {
+            xkcd::xkcd(&ctx, &message).await;
             return;
         }
 
