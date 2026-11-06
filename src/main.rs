@@ -8,8 +8,8 @@ use serenity::Client;
 
 use wan_party_bot::blacklist::is_blacklisted_channel;
 use wan_party_bot::{
-    botself, chat, client as client_cfg, commands, db, discord_util, memory, message_handler,
-    quote, xkcd,
+    app_commands, botself, chat, client as client_cfg, commands, db, discord_util, memory,
+    message_handler, quote, xkcd,
 };
 
 fn today_mmdd() -> String {
@@ -38,6 +38,8 @@ impl EventHandler for Handler {
         // dispatched them. See `interaction_create` below. The one schema change
         // since then (/sayquote's optional user filter) is upserted here.
         commands::register(&ctx).await;
+        // The text-prefix features as real slash / right-click commands.
+        app_commands::register(&ctx).await;
 
         ctx.set_activity(Some(ActivityData::playing(status_info)));
 
@@ -116,9 +118,18 @@ impl EventHandler for Handler {
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::Command(cmd) = interaction {
-            println!("{}: /{}", cmd.user.name, cmd.data.name);
-            commands::dispatch(&ctx, &cmd).await;
+        match interaction {
+            Interaction::Command(cmd) => {
+                println!("{}: /{}", cmd.user.name, cmd.data.name);
+                if !app_commands::dispatch(&ctx, &cmd).await {
+                    commands::dispatch(&ctx, &cmd).await;
+                }
+            }
+            Interaction::Modal(modal) => {
+                println!("{}: submitted {}", modal.user.name, modal.data.custom_id);
+                app_commands::dispatch_modal(&ctx, &modal).await;
+            }
+            _ => {}
         }
     }
 

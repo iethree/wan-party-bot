@@ -1,14 +1,17 @@
-//! `/xkcd [search]` — find the most relevant xkcd comic and post it as an embed.
+//! xkcd search: find the most relevant xkcd comic and post it as an embed.
 //!
-//! The search text is whatever follows `/xkcd`. With no text, the command must be
-//! a reply, and the replied-to message's content is the search text. Searching
-//! uses the findxkcd API, which returns results ranked by relevance.
+//! Three ways in: `/xkcd <search>` as a slash command, message → Apps → Find
+//! xkcd (searches that message), or `/xkcd [search]` typed as text, where a bare
+//! `/xkcd` sent as a reply searches the replied-to message. Searching uses the
+//! findxkcd API, which ranks results by relevance and leaves out weak matches.
 
+use crate::blacklist::is_blacklisted_channel;
 use crate::chat;
 use crate::discord_util;
+use crate::invoke::Invoker;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use serenity::all::{Context, CreateEmbed, CreateEmbedFooter, CreateMessage, Message};
+use serenity::all::{ChannelId, Context, CreateEmbed, CreateEmbedFooter, CreateMessage, Message};
 
 const SEARCH_URL: &str = "https://findxkcd.infopanel.org/api/search";
 
@@ -48,7 +51,7 @@ pub fn query_from_command(content: &str) -> Option<String> {
     normalize_query(rest)
 }
 
-fn normalize_query(text: &str) -> Option<String> {
+pub fn normalize_query(text: &str) -> Option<String> {
     let text = text.trim();
     if text.is_empty() {
         return None;
@@ -62,19 +65,43 @@ fn top_result(body: &str) -> Result<Option<Comic>, serde_json::Error> {
     Ok(resp.results.into_iter().next())
 }
 
-/// Search findxkcd and return the most relevant comic, if any matched.
-pub async fn search(query: &str) -> Result<Option<Comic>, String> {
-    let body = HTTP
+/// Why a search failed.
+#[derive(Debug)]
+pub enum SearchError {
+    /// 429: findxkcd allows 30 searches per minute per IP.
+    RateLimited,
+    Other(String),
+}
+
+impl std::fmt::Display for SearchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SearchError::RateLimited => f.write_str("rate limited (429)"),
+            SearchError::Other(m) => f.write_str(m),
+        }
+    }
+}
+
+/// Search findxkcd and return the most relevant comic, if any matched. The API
+/// leaves out weak matches, so `Ok(None)` is common for vague or quoted text.
+pub async fn search(query: &str) -> Result<Option<Comic>, SearchError> {
+    let other = |e: reqwest::Error| SearchError::Other(e.to_string());
+    let resp = HTTP
         .get(SEARCH_URL)
         .query(&[("q", query), ("limit", "1")])
         .send()
         .await
-        .and_then(|r| r.error_for_status())
-        .map_err(|e| e.to_string())?
+        .map_err(other)?;
+    if resp.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+        return Err(SearchError::RateLimited);
+    }
+    let body = resp
+        .error_for_status()
+        .map_err(other)?
         .text()
         .await
-        .map_err(|e| e.to_string())?;
-    top_result(&body).map_err(|e| e.to_string())
+        .map_err(other)?;
+    top_result(&body).map_err(|e| SearchError::Other(e.to_string()))
 }
 
 fn comic_embed(comic: &Comic) -> CreateEmbed {
@@ -93,20 +120,41 @@ fn comic_embed(comic: &Comic) -> CreateEmbed {
     embed
 }
 
-async fn react(ctx: &Context, msg: &Message, emoji: &str) {
-    let _ = msg.react(&ctx.http, discord_util::unicode(emoji)).await;
-}
-
-/// `/xkcd [search]`. Replies to the replied-to message when used as a reply,
-/// otherwise to the command message. Reacts 🤷 when there is nothing to search
-/// for or nothing matched, and 😵 when the search fails.
+/// `/xkcd [search]` typed as text. The search is the text after `/xkcd`, or the
+/// replied-to message when there is none.
 pub async fn xkcd(ctx: &Context, message: &Message) {
     let quoted = chat::get_quoted_msg(ctx, message).await;
-
     let query = query_from_command(&message.content)
         .or_else(|| quoted.as_ref().and_then(|q| normalize_query(&q.content)));
+    let inv = Invoker::Message(message);
+    find_and_post(
+        ctx,
+        &inv,
+        query,
+        quoted.as_ref().or(Some(message)),
+        message.channel_id,
+    )
+    .await;
+}
+
+/// Search for `query` and post the top comic to `channel_id`, as a reply to
+/// `reply_to` when given. Reports 🤷 when there is nothing to search for, a
+/// "no xkcd found" note when nothing matched, and 😵 when the search fails.
+pub async fn find_and_post(
+    ctx: &Context,
+    inv: &Invoker<'_>,
+    query: Option<String>,
+    reply_to: Option<&Message>,
+    channel_id: ChannelId,
+) {
+    let name = discord_util::channel_name(ctx, channel_id).await;
+    if is_blacklisted_channel(name.as_deref()) {
+        inv.react(ctx, "🙅‍♀️").await;
+        return;
+    }
+
     let Some(query) = query else {
-        react(ctx, message, "🤷").await;
+        inv.react(ctx, "🤷").await;
         return;
     };
 
@@ -114,24 +162,43 @@ pub async fn xkcd(ctx: &Context, message: &Message) {
     let comic = match search(&query).await {
         Ok(Some(c)) => c,
         Ok(None) => {
-            react(ctx, message, "🤷").await;
+            println!("no xkcd found for {query}");
+            inv.say(ctx, &format!("no xkcd found for \"{}\"", preview(&query)))
+                .await;
+            return;
+        }
+        Err(SearchError::RateLimited) => {
+            println!("xkcd search rate limited");
+            inv.say(ctx, "too many xkcd searches, try again in a minute")
+                .await;
             return;
         }
         Err(e) => {
             println!("error searching xkcd");
             println!("{e}");
-            react(ctx, message, "😵").await;
+            inv.react(ctx, "😵").await;
             return;
         }
     };
 
-    let target = quoted.as_ref().unwrap_or(message);
-    let reply = CreateMessage::new()
-        .embed(comic_embed(&comic))
-        .reference_message(target);
-    if let Err(e) = message.channel_id.send_message(&ctx.http, reply).await {
+    let mut post = CreateMessage::new().embed(comic_embed(&comic));
+    if let Some(target) = reply_to {
+        post = post.reference_message(target);
+    }
+    if let Err(e) = channel_id.send_message(&ctx.http, post).await {
         println!("error sending xkcd");
         println!("{e}");
+        inv.react(ctx, "😵").await;
+    }
+}
+
+/// The start of a search, for echoing it back without a wall of text.
+fn preview(query: &str) -> String {
+    const MAX: usize = 80;
+    if query.chars().count() <= MAX {
+        query.to_string()
+    } else {
+        format!("{}…", query.chars().take(MAX).collect::<String>())
     }
 }
 

@@ -8,6 +8,7 @@
 use crate::blacklist::is_blacklisted_channel;
 use crate::db;
 use crate::discord_util;
+use crate::invoke::Invoker;
 use crate::memory;
 use rusqlite::Connection;
 use serenity::all::{Context, Message, UserId};
@@ -15,41 +16,32 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub async fn quote(ctx: &Context, message: &Message) {
-    let name = discord_util::channel_name(ctx, message.channel_id).await;
-    if is_blacklisted_channel(name.as_deref()) {
-        let _ = message
-            .react(&ctx.http, discord_util::unicode("🙅‍♀️"))
-            .await;
-        return;
-    }
-
     // `message.channel.fetch_message(message.reference.message_id)`. Without a
     // reply (no reference), the original raises and sends the apology below.
-    let quoted = match message.message_reference.as_ref().and_then(|r| r.message_id) {
-        Some(mid) => match message.channel_id.message(&ctx.http, mid).await {
-            Ok(m) => m,
-            Err(_) => {
-                let _ = message
-                    .channel_id
-                    .say(
-                        &ctx.http,
-                        "you probably didn't quote something, or the dev was too lazy to handle the error right",
-                    )
-                    .await;
-                return;
-            }
-        },
-        None => {
-            let _ = message
-                .channel_id
-                .say(
-                    &ctx.http,
-                    "you probably didn't quote something, or the dev was too lazy to handle the error right",
-                )
-                .await;
-            return;
-        }
+    let fetched = match message.message_reference.as_ref().and_then(|r| r.message_id) {
+        Some(mid) => message.channel_id.message(&ctx.http, mid).await.ok(),
+        None => None,
     };
+    let Some(quoted) = fetched else {
+        let _ = message
+            .channel_id
+            .say(
+                &ctx.http,
+                "you probably didn't quote something, or the dev was too lazy to handle the error right",
+            )
+            .await;
+        return;
+    };
+    quote_message(ctx, &Invoker::Message(message), &quoted).await;
+}
+
+/// Save `quoted` to the quotes table.
+pub async fn quote_message(ctx: &Context, inv: &Invoker<'_>, quoted: &Message) {
+    let name = discord_util::channel_name(ctx, quoted.channel_id).await;
+    if is_blacklisted_channel(name.as_deref()) {
+        inv.react(ctx, "🙅‍♀️").await;
+        return;
+    }
 
     println!("quoting {}", quoted.content);
 
@@ -67,18 +59,14 @@ pub async fn quote(ctx: &Context, message: &Message) {
             // Remember it against the person who said it, not whoever ran /quote.
             memory::record_quote(
                 quoted.author.id.get(),
-                &discord_util::display_name(&quoted),
+                &discord_util::display_name(quoted),
                 &quoted.content,
             );
-            let _ = message
-                .react(&ctx.http, discord_util::unicode("✅"))
-                .await;
+            inv.react(ctx, "✅").await;
         }
         Err(e) => {
-            let _ = message.channel_id.say(&ctx.http, e.to_string()).await;
-            let _ = message
-                .react(&ctx.http, discord_util::unicode("❌"))
-                .await;
+            let _ = quoted.channel_id.say(&ctx.http, e.to_string()).await;
+            inv.react(ctx, "❌").await;
         }
     }
 }

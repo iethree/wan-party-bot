@@ -20,6 +20,7 @@
 /// when built outside a git checkout (e.g. from a source tarball).
 pub const VERSION: &str = env!("BUILD_VERSION");
 
+pub mod app_commands;
 pub mod blacklist;
 pub mod chat;
 pub mod client;
@@ -30,6 +31,7 @@ pub mod db;
 pub mod discord_util;
 pub mod error_messages;
 pub mod giphy;
+pub mod invoke;
 pub mod jev;
 pub mod jokes;
 pub mod leaderboards;

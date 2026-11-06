@@ -12,7 +12,8 @@ use crate::jev;
 use once_cell::sync::Lazy;
 use rand::seq::SliceRandom;
 use serde_json::{json, Value};
-use serenity::all::{Context, Message};
+use crate::invoke::Invoker;
+use serenity::all::{ChannelId, Context, GuildId, Message, UserId};
 use std::sync::Mutex;
 
 const MODEL: &str = "claude-sonnet-5-5";
@@ -444,13 +445,19 @@ async fn react(ctx: &Context, msg: &Message, emoji: &str) {
 
 /// React to a failed AI call: 💰 when it was a billing problem, otherwise the
 /// emoji this particular feature normally uses to shrug.
-async fn react_error(ctx: &Context, msg: &Message, err: &ChatError, usual: &str) {
-    react(
-        ctx,
-        msg,
-        if err.is_payment() { PAYMENT_EMOJI } else { usual },
-    )
-    .await;
+async fn react_error(ctx: &Context, inv: &Invoker<'_>, err: &ChatError, usual: &str) {
+    inv.react(ctx, if err.is_payment() { PAYMENT_EMOJI } else { usual })
+        .await;
+}
+
+/// The replied-to message for a text-prefix command, reacting 🤷 when there
+/// isn't one.
+async fn quoted_or_shrug(ctx: &Context, message: &Message) -> Option<Message> {
+    let quoted = get_quoted_msg(ctx, message).await;
+    if quoted.is_none() {
+        react(ctx, message, "🤷").await;
+    }
+    quoted
 }
 
 /// The message with the bot's own mention removed, so Jev is handed the question
@@ -543,18 +550,17 @@ your reply; don't recite it verbatim):\n{memory}"
 
 /// `comeback(message)`.
 pub async fn comeback(ctx: &Context, message: &Message) {
-    if channel_blacklisted(ctx, message).await {
-        react(ctx, message, "🙅‍♀️").await;
+    if let Some(quoted) = quoted_or_shrug(ctx, message).await {
+        comeback_to(ctx, &Invoker::Message(message), &quoted).await;
+    }
+}
+
+/// Reply to `quoted` with a comeback.
+pub async fn comeback_to(ctx: &Context, inv: &Invoker<'_>, quoted: &Message) {
+    if channel_blacklisted(ctx, quoted).await {
+        inv.react(ctx, "🙅‍♀️").await;
         return;
     }
-
-    let quoted = match get_quoted_msg(ctx, message).await {
-        Some(q) => q,
-        None => {
-            react(ctx, message, "🤷").await;
-            return;
-        }
-    };
 
     let reply = match get_ai_comeback(&quoted.content).await {
         Ok(t) => t,
@@ -564,7 +570,7 @@ pub async fn comeback(ctx: &Context, message: &Message) {
             // This one has a real non-AI fallback, so there's no error emoji to
             // swap — react 💰 alongside it so a billing stop still shows up.
             if e.is_payment() {
-                react(ctx, message, PAYMENT_EMOJI).await;
+                inv.react(ctx, PAYMENT_EMOJI).await;
             }
             get_comeback(&quoted.content)
         }
@@ -581,12 +587,8 @@ pub async fn kindness(ctx: &Context, message: &Message) {
         return;
     }
 
-    let quoted = match get_quoted_msg(ctx, message).await {
-        Some(q) => q,
-        None => {
-            react(ctx, message, "🤷").await;
-            return;
-        }
+    let Some(quoted) = quoted_or_shrug(ctx, message).await else {
+        return;
     };
 
     let reply = match get_ai_kindness(&quoted.content).await {
@@ -594,7 +596,7 @@ pub async fn kindness(ctx: &Context, message: &Message) {
         Err(e) => {
             println!("error getting ai kindness");
             println!("{e}");
-            react_error(ctx, message, &e, "❤️").await;
+            react_error(ctx, &Invoker::Message(message), &e, "❤️").await;
             return;
         }
     };
@@ -604,18 +606,17 @@ pub async fn kindness(ctx: &Context, message: &Message) {
 
 /// `respond_as(message, personality)`.
 pub async fn respond_as(ctx: &Context, message: &Message, personality: &str) {
-    if channel_blacklisted(ctx, message).await {
-        react(ctx, message, "🙅‍♀️").await;
+    if let Some(quoted) = quoted_or_shrug(ctx, message).await {
+        respond_as_to(ctx, &Invoker::Message(message), &quoted, personality).await;
+    }
+}
+
+/// Reply to `quoted` in the voice of `personality`.
+pub async fn respond_as_to(ctx: &Context, inv: &Invoker<'_>, quoted: &Message, personality: &str) {
+    if channel_blacklisted(ctx, quoted).await {
+        inv.react(ctx, "🙅‍♀️").await;
         return;
     }
-
-    let quoted = match get_quoted_msg(ctx, message).await {
-        Some(q) => q,
-        None => {
-            react(ctx, message, "🤷").await;
-            return;
-        }
-    };
 
     // On AI error the original reacts 🫣 and then crashes on the undefined `msg`,
     // so no reply is ever sent — reproduced by reacting and returning.
@@ -624,7 +625,7 @@ pub async fn respond_as(ctx: &Context, message: &Message, personality: &str) {
         Err(e) => {
             println!("error getting ai comeback");
             println!("{e}");
-            react_error(ctx, message, &e, "🫣").await;
+            react_error(ctx, inv, &e, "🫣").await;
             return;
         }
     };
@@ -634,29 +635,50 @@ pub async fn respond_as(ctx: &Context, message: &Message, personality: &str) {
 
 /// `recap(message)`.
 pub async fn recap(ctx: &Context, message: &Message) {
-    if channel_blacklisted(ctx, message).await {
-        react(ctx, message, "🙅‍♀️").await;
+    let Some(quoted) = quoted_or_shrug(ctx, message).await else {
+        return;
+    };
+    let target = RecapTarget {
+        user_id: quoted.author.id,
+        display: discord_util::display_name(&quoted),
+        guild_id: message.guild_id,
+        channel_id: quoted.channel_id,
+    };
+    recap_user(ctx, &Invoker::Message(message), &target, Some(&quoted)).await;
+}
+
+/// Whose year to recap, and where to post it.
+pub struct RecapTarget {
+    pub user_id: UserId,
+    pub display: String,
+    pub guild_id: Option<GuildId>,
+    pub channel_id: ChannelId,
+}
+
+/// Recap a year of `target`'s messages. The recap replies to `reply_to` when
+/// given, otherwise it's posted to `target.channel_id`.
+pub async fn recap_user(
+    ctx: &Context,
+    inv: &Invoker<'_>,
+    target: &RecapTarget,
+    reply_to: Option<&Message>,
+) {
+    let name = discord_util::channel_name(ctx, target.channel_id).await;
+    if is_blacklisted_channel(name.as_deref()) {
+        inv.react(ctx, "🙅‍♀️").await;
         return;
     }
 
-    let quoted = match get_quoted_msg(ctx, message).await {
-        Some(q) => q,
-        None => {
-            react(ctx, message, "🤷").await;
-            return;
-        }
-    };
+    let target_user_id = target.user_id;
+    let target_display = &target.display;
 
-    let target_user_id = quoted.author.id;
-    let target_display = discord_util::display_name(&quoted);
-
-    let typing = message.channel_id.start_typing(&ctx.http);
+    let typing = target.channel_id.start_typing(&ctx.http);
 
     let one_year_ago_ms =
         (chrono::Local::now() - chrono::Duration::days(365)).timestamp_millis();
     let mut collected: Vec<String> = Vec::new();
 
-    if let Some(guild_id) = message.guild_id {
+    if let Some(guild_id) = target.guild_id {
         if let Ok(channels) = guild_id.channels(&ctx.http).await {
             // `message.guild.text_channels` is sorted by (position, id); iterate in
             // the same deterministic order so the messages fed to the recap prompt
@@ -682,12 +704,11 @@ pub async fn recap(ctx: &Context, message: &Message) {
 
     if collected.is_empty() {
         typing.stop();
-        let _ = message
-            .reply_ping(
-                &ctx.http,
-                format!("I couldn't find any messages from {target_display} in the past year."),
-            )
-            .await;
+        inv.say(
+            ctx,
+            &format!("I couldn't find any messages from {target_display} in the past year."),
+        )
+        .await;
         return;
     }
 
@@ -696,37 +717,42 @@ pub async fn recap(ctx: &Context, message: &Message) {
         full_text = full_text.chars().take(100000).collect();
     }
 
-    let recap_response = match get_ai_recap(&target_display, &full_text).await {
+    let recap_response = match get_ai_recap(target_display, &full_text).await {
         Ok(t) => t,
         Err(e) => {
             println!("Error generating recap: {e}");
             typing.stop();
-            react_error(ctx, message, &e, "😵").await;
+            react_error(ctx, inv, &e, "😵").await;
             return;
         }
     };
     typing.stop();
 
     for chunk in auto_split_messages(&recap_response, 2000) {
-        let _ = quoted.reply_ping(&ctx.http, chunk).await;
+        let _ = match reply_to {
+            Some(m) => m.reply_ping(&ctx.http, chunk).await,
+            None => target.channel_id.say(&ctx.http, chunk).await,
+        };
     }
 }
 
 /// `tldr(message)`.
 pub async fn tldr(ctx: &Context, message: &Message) {
-    if channel_blacklisted(ctx, message).await {
-        react(ctx, message, "🙅‍♀️").await;
+    // Without a reply, the original dereferences `None.content`, then again in the
+    // fallback, crashing the handler — observably nothing happens. Reproduced.
+    if let Some(quoted) = get_quoted_msg(ctx, message).await {
+        tldr_to(ctx, &Invoker::Message(message), &quoted).await;
+    }
+}
+
+/// Reply to `quoted` with a TL;DR of it.
+pub async fn tldr_to(ctx: &Context, inv: &Invoker<'_>, quoted: &Message) {
+    if channel_blacklisted(ctx, quoted).await {
+        inv.react(ctx, "🙅‍♀️").await;
         return;
     }
 
-    // Without a reply, the original dereferences `None.content`, then again in the
-    // fallback, crashing the handler — observably nothing happens. Reproduced.
-    let quoted = match get_quoted_msg(ctx, message).await {
-        Some(q) => q,
-        None => return,
-    };
-
-    let typing = message.channel_id.start_typing(&ctx.http);
+    let typing = quoted.channel_id.start_typing(&ctx.http);
     let reply = match get_tldr_response(&quoted.content).await {
         Ok(t) => t,
         Err(e) => {
@@ -734,7 +760,7 @@ pub async fn tldr(ctx: &Context, message: &Message) {
             println!("{e}");
             // Same as /comeback: a text fallback, plus 💰 when it's the bill.
             if e.is_payment() {
-                react(ctx, message, PAYMENT_EMOJI).await;
+                inv.react(ctx, PAYMENT_EMOJI).await;
             }
             get_comeback(&quoted.content)
         }
@@ -807,7 +833,7 @@ pub async fn bot_response(ctx: &Context, message: &Message) {
     if let Err(e) = outcome {
         println!("error getting ai bot response");
         println!("{e}");
-        react_error(ctx, message, &e, "🤷‍♀️").await;
+        react_error(ctx, &Invoker::Message(message), &e, "🤷‍♀️").await;
     }
 }
 

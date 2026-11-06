@@ -41,6 +41,15 @@ binaries with `build.sh`, copies them to the server, and runs `scripts/deploy.sh
 there: back up the db, reset to `origin/master`, swap the binaries in, restart
 `partybot`. Binaries aren't committed — `dist/` is gitignored.
 
+## Commands
+
+The reply-based text commands also exist as real Discord commands
+(`src/app_commands.rs`). Slash commands can't be replies, so those are
+right-click commands: message → Apps → Quote / Comeback / Respond as… / TL;DR /
+Find xkcd, and user → Apps → Recap. `/xkcd search:` and `/recap user:` are slash
+commands. Typing `/quote`, `/comeback`, `/as`, `/tldr`, `/recap` or `/xkcd` as a
+reply still works.
+
 ## AI routing
 
 When someone @-mentions the bot, TypeSafe's Jev (`src/jev.rs`) gets the message
