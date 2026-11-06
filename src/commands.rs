@@ -118,9 +118,15 @@ pub async fn dispatch(ctx: &Context, cmd: &CommandInteraction) {
                 .first()
                 .and_then(|o| o.value.as_str())
                 .and_then(|s| s.parse::<i64>().ok());
-            poll(ctx, hours.unwrap_or_else(hours_left)).await;
+            let result = poll(ctx, hours.unwrap_or_else(hours_left)).await;
             ephemeral = true;
-            Some("✅".to_string())
+            Some(match result {
+                Ok(()) => "✅".to_string(),
+                Err(e) => {
+                    println!("game poll failed: {e}");
+                    format!("❌ {e}")
+                }
+            })
         }
         // Everything else crashed in Python before responding; do the same nothing.
         _ => None,
@@ -711,7 +717,7 @@ fn run_sql(arg: &str) -> rusqlite::Result<Vec<String>> {
 
 pub async fn game_poll(ctx: &Context, message: &Message, hours: Option<i64>) {
     let h = hours.unwrap_or_else(hours_left);
-    poll(ctx, h).await;
+    let _ = poll(ctx, h).await;
     respond(ctx, message, "✅").await;
 }
 

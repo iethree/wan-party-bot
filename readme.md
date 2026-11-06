@@ -17,7 +17,7 @@ The bot is a Rust/`serenity` application. Two binaries mirror the two original
 Python entrypoints:
 
 - `wan-party-bot` — the bot itself (was `main.py`)
-- `trigger_poll` — post the weekly games poll once, then exit (was `trigger_poll.py`)
+- `trigger_poll` — post the weekly games poll once, then exit (was `trigger_poll.py`; not scheduled)
 
 ```zsh
 # build
@@ -49,6 +49,16 @@ right-click commands: message → Apps → Quote / Comeback / Respond as… / TL
 Find xkcd, and user → Apps → Recap. `/xkcd search:` and `/recap user:` are slash
 commands. Typing `/quote`, `/comeback`, `/as`, `/tldr`, `/recap` or `/xkcd` as a
 reply still works.
+
+## Weekly games poll
+
+The poll's games live in the `poll_options` table in `wanparty.db`. The first run
+seeds it from `OPTIONS` in `src/poll.rs`. `/poll-config` (Manage Server only)
+opens a private panel for moving games between the poll (max 10) and the
+backlog, reordering, adding, renaming, deleting, and setting emojis. Emojis can
+be a unicode emoji, a `:shortcode:`, or a server emoji name. Post the poll with
+the panel's "Post poll now" button or `/game_poll`; nothing posts it on a
+schedule.
 
 ## AI routing
 

@@ -15,7 +15,9 @@ impl EventHandler for PollHandler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("we have logged in as {}", ready.user.name);
         let hours = hours_left();
-        poll(&ctx, hours).await;
+        if let Err(e) = poll(&ctx, hours).await {
+            eprintln!("{e}");
+        }
         std::process::exit(0);
     }
 }

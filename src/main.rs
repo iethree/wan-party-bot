@@ -9,7 +9,7 @@ use serenity::Client;
 use wan_party_bot::blacklist::is_blacklisted_channel;
 use wan_party_bot::{
     app_commands, botself, chat, client as client_cfg, commands, db, discord_util, memory,
-    message_handler, quote, xkcd,
+    message_handler, poll_config, quote, xkcd,
 };
 
 fn today_mmdd() -> String {
@@ -127,7 +127,13 @@ impl EventHandler for Handler {
             }
             Interaction::Modal(modal) => {
                 println!("{}: submitted {}", modal.user.name, modal.data.custom_id);
-                app_commands::dispatch_modal(&ctx, &modal).await;
+                if !app_commands::dispatch_modal(&ctx, &modal).await {
+                    poll_config::handle_modal(&ctx, &modal).await;
+                }
+            }
+            Interaction::Component(comp) => {
+                println!("{}: clicked {}", comp.user.name, comp.data.custom_id);
+                poll_config::handle_component(&ctx, &comp).await;
             }
             _ => {}
         }

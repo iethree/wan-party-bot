@@ -1,6 +1,6 @@
 //! Port of `poll.py` — the weekly games poll and the `hours_left` schedule math.
-//! `poll()` is live (driven by the `trigger_poll` binary); the never-synced
-//! `/game_poll` command also called it.
+//! `poll()` is run by `/game_poll`, the "Post poll now" button in `/poll-config`,
+//! and the `trigger_poll` binary.
 
 use chrono::Datelike;
 use serenity::all::{
@@ -16,6 +16,8 @@ pub const SCHEDULE_CHANNEL_ID: u64 = 491257084650717195;
 /// Only this many options are added to the poll.
 pub const MAX_OPTIONS: usize = 10;
 
+/// The options the `poll_options` table is seeded with on first run. After that
+/// the table is the source of truth; edit it with `/poll-config`.
 pub const OPTIONS: [(&str, &str); 48] = [
     ("Warhammer 40k Darktide", "🔨"),
     ("Mythforce", "🛡️"),
@@ -68,10 +70,9 @@ pub const OPTIONS: [(&str, &str); 48] = [
     ("Helldivers 1", "🪂"),
 ];
 
-/// `emoji.is_emoji(name)` proxy: in this fixed option set, every unicode emoji is
-/// non-ASCII and every custom-emoji name is ASCII, so this discriminates them
-/// exactly as the original did.
-fn is_emoji(name: &str) -> bool {
+/// `emoji.is_emoji(name)` proxy: every unicode emoji is non-ASCII and every
+/// custom-emoji name is ASCII (`/poll-config` only stores those two forms).
+pub fn is_emoji(name: &str) -> bool {
     !name.is_ascii()
 }
 
@@ -111,20 +112,30 @@ fn poll_emoji(map: &Option<HashMap<String, EmojiId>>, name: &str) -> Option<Poll
     }
 }
 
-/// `poll(hours=50)`.
-pub async fn poll(ctx: &Context, hours: i64) {
+/// `poll(hours=50)`. Posts the active games from the `poll_options` table (see
+/// [`crate::poll_options`]; edited with `/poll-config`).
+pub async fn poll(ctx: &Context, hours: i64) -> Result<(), String> {
     println!("sending weekly games poll:  {hours}  hours");
+
+    let options = crate::poll_options::connect()
+        .and_then(|c| crate::poll_options::active(&c))
+        .map_err(|e| format!("couldn't read poll options: {e}"))?;
+    if options.is_empty() {
+        return Err("the poll has no games in it".to_string());
+    }
 
     let channel_id = ChannelId::new(SCHEDULE_CHANNEL_ID);
     let emoji_map = resolve_guild_emojis(ctx, channel_id).await;
 
     let mut answers: Vec<CreatePollAnswer> = Vec::new();
-    for (text, icon) in OPTIONS.iter().take(MAX_OPTIONS) {
-        let mut answer = CreatePollAnswer::new().text(*text);
+    for opt in options.iter().take(MAX_OPTIONS) {
+        let mut answer = CreatePollAnswer::new().text(&opt.name);
         // When the emoji resolves to None (custom name absent from a resolved
         // guild), add the answer with no emoji — exactly like `emoji=None`.
-        if let Some(pe) = poll_emoji(&emoji_map, icon) {
-            answer = answer.emoji(pe);
+        if !opt.emoji.is_empty() {
+            if let Some(pe) = poll_emoji(&emoji_map, &opt.emoji) {
+                answer = answer.emoji(pe);
+            }
         }
         answers.push(answer);
     }
@@ -137,9 +148,11 @@ pub async fn poll(ctx: &Context, hours: i64) {
         .duration(duration)
         .allow_multiselect();
 
-    let _ = channel_id
+    channel_id
         .send_message(&ctx.http, CreateMessage::new().poll(game_poll))
-        .await;
+        .await
+        .map(|_| ())
+        .map_err(|e| format!("couldn't post the poll: {e}"))
 }
 
 fn python_mod(a: i64, b: i64) -> i64 {

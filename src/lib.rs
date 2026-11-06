@@ -41,6 +41,8 @@ pub mod markov_haiku;
 pub mod memory;
 pub mod message_handler;
 pub mod poll;
+pub mod poll_config;
+pub mod poll_options;
 pub mod quote;
 pub mod quotes;
 pub mod reaction;
