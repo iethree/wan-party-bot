@@ -16,6 +16,18 @@ fn main() {
         .unwrap_or_else(|| "unknown".to_string());
     println!("cargo:rustc-env=BUILD_VERSION={version}");
 
+    // Subject line of the latest commit, shown in the bot's status message.
+    let message = Command::new("git")
+        .args(["log", "-1", "--pretty=%s"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().replace(['\r', '\n'], " "))
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string());
+    println!("cargo:rustc-env=BUILD_COMMIT_MESSAGE={message}");
+
     // Recompute when a new commit lands (or the branch changes) so the baked-in
     // number stays current across rebuilds. `.git/logs/HEAD` is appended on every
     // commit; `.git/HEAD` changes on a branch switch.

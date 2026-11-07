@@ -25,12 +25,12 @@ impl EventHandler for Handler {
         println!("we have logged in as {}", ready.user.name);
 
         // Presence: "v<version> | <last commit message>".
-        let commit = std::process::Command::new("git")
-            .args(["log", "-1", "--pretty=%B"])
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-            .unwrap_or_default();
-        let status_info = format!("v{} | {}", wan_party_bot::VERSION, commit.trim());
+        // Discord limits activity text to 128 characters.
+        let status_info: String =
+            format!("v{} | {}", wan_party_bot::VERSION, wan_party_bot::COMMIT_MESSAGE)
+                .chars()
+                .take(128)
+                .collect();
 
         // await tree.sync()  <-- commented out in the original. Sync only
         // (re-)registers commands with Discord; the commands were synced in the

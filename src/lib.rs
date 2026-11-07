@@ -20,6 +20,9 @@
 /// when built outside a git checkout (e.g. from a source tarball).
 pub const VERSION: &str = env!("BUILD_VERSION");
 
+/// Subject line of the latest commit, baked in by `build.rs` (`"unknown"` outside git).
+pub const COMMIT_MESSAGE: &str = env!("BUILD_COMMIT_MESSAGE");
+
 pub mod app_commands;
 pub mod blacklist;
 pub mod chat;
